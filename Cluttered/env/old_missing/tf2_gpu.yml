@@ -1,0 +1,14 @@
+name: tf2_gpu
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - tensorflow-gpu=2.1
+  - sqlalchemy
+  - urllib3
+  - pyodbc
+  - matplotlib
+  - pandas
+prefix: C:\Users\parma\anaconda3\envs\tf2_gpu
+

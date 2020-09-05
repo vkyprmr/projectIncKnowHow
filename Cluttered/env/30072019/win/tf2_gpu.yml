@@ -1,0 +1,20 @@
+name: tf2_gpu
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - urllib3
+  - plotly
+  - bokeh
+  - pandas
+  - seaborn
+  - scipy
+  - numpy
+  - sqlalchemy
+  - scikit-learn
+  - matplotlib
+  - pyodbc
+  - h5py
+  - pytables
+prefix: /home/vicky/anaconda3/envs/tf2_gpu
+

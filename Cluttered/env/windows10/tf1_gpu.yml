@@ -1,0 +1,21 @@
+name: tf1_gpu
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - tensorflow-gpu=1.15
+  - scipy
+  - sqlalchemy
+  - plotly
+  - matplotlib
+  - urllib3
+  - numpy
+  - scikit-learn
+  - seaborn
+  - bokeh
+  - pandas
+  - statsmodels
+  - h5py
+  - pytables
+prefix: /home/vicky/anaconda3/envs/tf1_gpu
+
