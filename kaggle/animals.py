@@ -16,7 +16,7 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-%matplotlib qt
+#%matplotlib qt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
@@ -24,32 +24,6 @@ from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard, ReduceLROnPlateau
-
-# Callback functions
-path_checkpoint = 'checkpoints/animals.keras'
-
-""" callback_checkpoint = ModelCheckpoint(filepath=path_checkpoint,
-                                      monitor='val_loss',
-                                      verbose=1,
-                                      save_weights_only=True,
-                                      save_best_only=True) """
-
-""" callback_early_stopping = EarlyStopping(monitor='val_loss',
-                                        patience=50, verbose=1) """
-
-log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')
-
-callback_tensorboard = TensorBoard(log_dir=log_dir,
-                                   histogram_freq=1,
-                                   write_graph=False)
-
-""" callback_reduce_lr = ReduceLROnPlateau(monitor='val_loss',
-                                       factor=0.1,
-                                       min_lr=1e-4,
-                                       patience=25,
-                                       verbose=1) """
-
-callbacks = [callback_tensorboard]
 
 # Runtime device and memory
 physical_devices = tf.config.experimental.list_physical_devices('GPU') 
@@ -140,6 +114,8 @@ train_fnames_dogs = os.listdir(train_dir_dogs)
 train_fnames_pandas = os.listdir(train_dir_pandas)
 
 #%%
+
+""" 
 # Looking at some images
 # Parameters for our graph; we'll output images in a 4x4 configuration
 nrows = 4
@@ -175,10 +151,10 @@ for i, img_path in enumerate(next_cat_pic+next_dog_pic+next_panda_pic):
     plt.imshow(img)
     # plt.tight_layout()
 
-
+ """
 # %%
 # Building the model
-model_name = f'icm-cm-cm-fdd_163x32x2-323x32x2-643x32x2-f512-3'
+model_name = f'icm_163x32x2-cm_323x32x2-cm_643x32x2-fd_512-o_3'
 
 model = Sequential(layers=[
                             Conv2D(16, (3,3), activation='relu', input_shape=(128,128,3)),
@@ -212,41 +188,84 @@ train_datagen = ImageDataGenerator(
 train_generator = train_datagen.flow_from_directory(
                                                     'Data/cats_dogs_pandas/train/',
                                                     target_size=(128, 128),
-                                                    batch_size=128,
+                                                    batch_size=50,
                                                     class_mode='sparse'
                                                     )
 val_datagen = ImageDataGenerator(rescale=1./255)
 val_generator = val_datagen.flow_from_directory(
                                                     'Data/cats_dogs_pandas/test/',
                                                     target_size=(128, 128),
-                                                    batch_size=128,
+                                                    batch_size=25,
                                                     class_mode='sparse'
                                                     )
 
 
 #%%
 # Training
-log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+model_name
+### Callback functions
+log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+'__'+model_name
+
+ckpt_dir = 'logs/checkpoints/'+model_name+'/'
+os.mkdir(ckpt_dir)
+path_checkpoint = ckpt_dir+datetime.now().strftime('%Y%m%d-%H%M%S')+'.ckpt'
+
+callback_checkpoint = ModelCheckpoint(filepath=path_checkpoint,
+                                      monitor='val_loss',
+                                      verbose=1,
+                                      save_weights_only=True,
+                                      save_best_only=True)
+
+""" callback_early_stopping = EarlyStopping(monitor='val_loss',
+                                        patience=50, verbose=1) """
+
+log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')
+
+callback_tensorboard = TensorBoard(log_dir=log_dir,
+                                   histogram_freq=1,
+                                   write_graph=False)
+
+""" callback_reduce_lr = ReduceLROnPlateau(monitor='val_loss',
+                                       factor=0.1,
+                                       min_lr=1e-4,
+                                       patience=25,
+                                       verbose=1) """
+
+callbacks = [callback_tensorboard, callback_checkpoint]
+
 
 history = model.fit_generator(
                                 train_generator,
-                                steps_per_epoch=25, epochs=100,
+                                steps_per_epoch=25, epochs=100, 
+                                validation_data=val_generator, validation_steps=10,
                                 verbose=1, callbacks=callbacks
                                 )
 
+models_dir = 'logs/models/'+model_name+'/'
+os.mkdir(models_dir)
+save_name = models_dir+datetime.now().strftime('%Y%m%d-%H%M%S')+'animals.h5'
+model.save(save_name)
 
 # %%
 # Visualizing performance
-plt.plot(history.history['loss'], label='Loss')
-plt.plot(history.history['acc'], label='Acc')
-plt.title('Loss vs. Accuracy')
+plt.figure()
+plt.plot(history.history['acc'], label='acc')
+plt.plot(history.history['val_acc'], label='val_acc')
+plt.title('Train vs. Validation Accuracy')
 plt.xlabel('Epochs')
-plt.ylabel('Metric')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.figure()
+plt.plot(history.history['loss'], label='loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.title('Train vs. Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
 plt.legend()
 
 # %%
 
-img = image.load_img('Data/cats_dogs_pandas/images/cat.jpg', target_size=(128, 128))
+img = image.load_img('Data/cats_dogs_pandas/images/panda.jpg', target_size=(128, 128))
 x = image.img_to_array(img)
 x = np.expand_dims(x, axis=0)
 images = np.vstack([x])
