@@ -19,7 +19,7 @@ import matplotlib.image as mpimg
 #%matplotlib qt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
@@ -31,77 +31,10 @@ for physical_device in physical_devices:
         tf.config.experimental.set_memory_growth(physical_device, True)
 
 #%%
-# More control over Runtime device and memory
-### Check compatibility with tf_v1 and v2 before running the code
-"""
-    Arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-gm", "--gpumemory",dest = "gpu_memory", help="GPU Memory to use - default 2 GB")
-    parser.add_argument("-m", "--mode",dest = "mode", help="Mode: 'static':'s' or 'dynamic':'d'")
-    parser.add_argument("-bs", "--batchsize",dest = "batch_size", help="Batch size")
-    parser.add_argument("-e", "--epochs",dest = "epochs", help="Epochs")
-    parser.add_argument("-d", "--device",dest = "device", help="CPU/GPU - default: CPU")
-
-
-    args = parser.parse_args()
-    try:
-        batch_size = int(args.batch_size)
-    except:
-        batch_size = 64
-    #print(batch_size)
-    try:
-        mode = args.mode.lower()
-    except:
-        mode = 'd'
-    #print(mode)
-    try:
-        epochs = int(args.epochs)
-    except:
-        epochs = 10
-    #print(epochs)
-    try:
-        device = args.device.lower()
-    except:
-        device = 'no_device'
-    #print(device)
-    try:
-        gpu_mem = int(args.gpu_memory)
-    except:
-        gpu_mem = 2
-    #print(gpu_mem)
-
-
-    if device=='gpu':
-        if mode=='s' or mode=='static':
-            #gpu_mem = int(args.gpu_memory)
-            gpus = tf.config.experimental.list_physical_devices('GPU')
-            #The variable GB is the memory size you want to use.
-            try:
-                config = [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=(1024*gpu_mem))]
-                if gpus:
-                    # Restrict TensorFlow to only allocate 1*X GB of memory on the first GPU
-                    try:
-                        tf.config.experimental.set_virtual_device_configuration(gpus[0], config)
-                        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-                        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
-                    except RuntimeError as e:
-                        # Virtual devices must be set before GPUs have been initialized
-                        print(e)
-            except:
-                print('Static mode selected but no memory limit set. Please set a memory limit by adding the flag -gm=X (gb) or --gpumemory=x (gb) after -m=s or --memory=s')
-                quit()
-        else:
-            physical_devices = tf.config.experimental.list_physical_devices('GPU') 
-            for physical_device in physical_devices: 
-                tf.config.experimental.set_memory_growth(physical_device, True)
-
-    else:
-        physical_devices = tf.config.experimental.list_physical_devices('CPU')
- """
-#%%
 # Preparing data
-base_dir = 'Data/cats_dogs_pandas/'
+base_dir = '../Data/cats_dogs_pandas/'
 train_dir = os.path.join(base_dir, 'train')
+val_dir = os.path.join(base_dir, 'test')
 
 ### Individual class directories
 train_dir_cats = os.path.join(train_dir, 'cats')
@@ -152,27 +85,6 @@ for i, img_path in enumerate(next_cat_pic+next_dog_pic+next_panda_pic):
     # plt.tight_layout()
 
  """
-# %%
-# Building the model
-model_name = f'icm_163x32x2-cm_323x32x2-cm_643x32x2-fd_512-o_3'
-
-model = Sequential(layers=[
-                            Conv2D(16, (3,3), activation='relu', input_shape=(128,128,3)),
-                            MaxPooling2D(2,2),
-                            Conv2D(32, (3,3), activation='relu'),
-                            MaxPooling2D(2,2),
-                            Conv2D(64, (3,3), activation='relu'),
-                            MaxPooling2D(2,2),
-                            Flatten(),
-                            Dense(512, activation='relu'),
-                            Dense(3, activation='softmax')
-                          ],
-                    name=model_name
-                    )
-model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.001),
-              metrics=['accuracy'])
-model.summary()
-
 #%%
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
@@ -186,23 +98,55 @@ train_datagen = ImageDataGenerator(
                                     fill_mode='nearest'
                                     )
 train_generator = train_datagen.flow_from_directory(
-                                                    'Data/cats_dogs_pandas/train/',
-                                                    target_size=(128, 128),
+                                                    train_dir,
+                                                    target_size=(64, 64),
                                                     batch_size=50,
                                                     class_mode='sparse'
                                                     )
 val_datagen = ImageDataGenerator(rescale=1./255)
 val_generator = val_datagen.flow_from_directory(
-                                                    'Data/cats_dogs_pandas/test/',
-                                                    target_size=(128, 128),
+                                                    val_dir,
+                                                    target_size=(64, 64),
                                                     batch_size=25,
                                                     class_mode='sparse'
                                                     )
+
+# %%
+# Building the model
+model_name = f'2C1D_16x32xd01x64x256_rms'
+
+model = Sequential(layers=[
+                            Conv2D(16, (3,3), activation='relu', input_shape=(64,64,3)),
+                            MaxPooling2D(2,2),
+                            Conv2D(32, (3,3), activation='relu'),
+                            MaxPooling2D(2,2),
+                            Dropout(0.1),
+                            Conv2D(64, (3,3), activation='relu'),
+                            MaxPooling2D(2,2),
+                            Flatten(),
+                            Dense(256, activation='relu'),
+                            Dense(3, activation='softmax')
+                          ],
+                    name=model_name
+                    )
+model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.001),
+              metrics=['accuracy'])
+model.summary()
 
 
 #%%
 # Training
 ### Callback functions
+
+""" # Training
+    epochs = 100
+    lr_schedule = LearningRateScheduler(lambda epoch: 1e-8 * 10**(epoch / 20))
+    history_lrs = model.fit(dataset, epochs=epochs, callbacks=[lr_schedule, tensorboard_callback], verbose=1)
+
+    # Visualizing Learning Rates
+    plt.semilogx(history_lrs.history['lr'], history_lrs.history["loss"])
+    plt.axis([1e-8, 1e-3, 0, 300]) """
+
 log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+'__'+model_name
 
 ckpt_dir = 'logs/checkpoints/'+model_name+'/'
@@ -215,8 +159,8 @@ callback_checkpoint = ModelCheckpoint(filepath=path_checkpoint,
                                       save_weights_only=True,
                                       save_best_only=True)
 
-""" callback_early_stopping = EarlyStopping(monitor='val_loss',
-                                        patience=50, verbose=1) """
+callback_early_stopping = EarlyStopping(monitor='val_loss',
+                                        patience=25, verbose=1)
 
 log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')
 
@@ -224,13 +168,16 @@ callback_tensorboard = TensorBoard(log_dir=log_dir,
                                    histogram_freq=1,
                                    write_graph=False)
 
-""" callback_reduce_lr = ReduceLROnPlateau(monitor='val_loss',
+callback_reduce_lr = ReduceLROnPlateau(monitor='val_loss',
                                        factor=0.1,
                                        min_lr=1e-4,
-                                       patience=25,
-                                       verbose=1) """
+                                       patience=10,
+                                       verbose=1)
 
-callbacks = [callback_tensorboard, callback_checkpoint]
+callbacks = [callback_tensorboard,
+             callback_checkpoint,
+             callback_early_stopping,
+             callback_reduce_lr]
 
 
 history = model.fit_generator(
@@ -265,7 +212,7 @@ plt.legend()
 
 # %%
 
-img = image.load_img('Data/cats_dogs_pandas/images/panda.jpg', target_size=(128, 128))
+img = image.load_img('../Data/cats_dogs_pandas/images/panda.jpg', target_size=(64, 64))
 x = image.img_to_array(img)
 x = np.expand_dims(x, axis=0)
 images = np.vstack([x])
