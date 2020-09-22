@@ -1,11 +1,11 @@
 '''
 Developer: vkyprmr
-Filename: animals.py
-Created on: 2020-09-20 at 14:51:30
+Filename: asl.py
+Created on: 2020-09-22 at 21:01:50
 '''
 '''
 Modified by: vkyprmr
-Last modified on: 2020-09-22 at 23:35:29
+Last modified on: 2020-09-22 at 23:04:53
 '''
 
 #%%
@@ -23,7 +23,7 @@ from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropou
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard, LearningRateScheduler, ReduceLROnPlateau
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, TensorBoard, ReduceLROnPlateau, LearningRateScheduler
 
 # Runtime device and memory
 physical_devices = tf.config.experimental.list_physical_devices('GPU') 
@@ -32,64 +32,15 @@ for physical_device in physical_devices:
 
 #%%
 # Preparing data
-base_dir = '../Data/cats_dogs_pandas/'
+base_dir = '../Data/asl/'
 train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'validation')
 
-### Individual class directories
-train_dir_cats = os.path.join(train_dir, 'cats')
-train_dir_dogs = os.path.join(train_dir, 'dogs')
-train_dir_pandas = os.path.join(train_dir, 'panda')
-
-### Files
-train_fnames_cats = os.listdir(train_dir_cats)
-train_fnames_dogs = os.listdir(train_dir_dogs)
-train_fnames_pandas = os.listdir(train_dir_pandas)
-
-#%%
-
-""" 
-# Looking at some images
-# Parameters for our graph; we'll output images in a 4x4 configuration
-nrows = 4
-ncols = 6
-
-pic_index = 0 # Index for iterating over images
-
-#%%
-# Set up matplotlib fig, and size it to fit 4x4 pics
-fig = plt.gcf()
-fig.set_size_inches(ncols*4, nrows*4)
-
-pic_index+=8
-
-next_cat_pic = [os.path.join(train_dir_cats, fname)
-                for fname in train_fnames_cats[ pic_index-8:pic_index]
-               ]
-
-next_dog_pic = [os.path.join(train_dir_dogs, fname)
-                for fname in train_fnames_dogs[ pic_index-8:pic_index]
-               ]
-
-next_panda_pic = [os.path.join(train_dir_pandas, fname)
-                for fname in train_fnames_pandas[ pic_index-8:pic_index]
-               ]
-
-for i, img_path in enumerate(next_cat_pic+next_dog_pic+next_panda_pic):
-    # Set up subplot; subplot indices start at 1
-    sp = plt.subplot(nrows, ncols, i+1)
-    sp.axis('Off') # Don't show axes (or gridlines)
-
-    img = mpimg.imread(img_path)
-    plt.imshow(img)
-    # plt.tight_layout()
-
- """
 #%%
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
                                     rescale=1./255,
-                                    rotation_range=40,
+                                    rotation_range=30,
                                     width_shift_range=0.2,
                                     height_shift_range=0.2,
                                     shear_range=0.2,
@@ -99,69 +50,65 @@ train_datagen = ImageDataGenerator(
                                     )
 train_generator = train_datagen.flow_from_directory(
                                                     train_dir,
-                                                    target_size=(64, 64),
+                                                    target_size=(128, 128),
                                                     batch_size=50,
                                                     class_mode='sparse'
                                                     )
 val_datagen = ImageDataGenerator(rescale=1./255)
 val_generator = val_datagen.flow_from_directory(
                                                     val_dir,
-                                                    target_size=(64, 64),
+                                                    target_size=(128, 128),
                                                     batch_size=25,
                                                     class_mode='sparse'
                                                     )
 
 # %%
 # Building the model
-model_name = f'2C1D_16x32xd01x64x256_rms'
+model_name = 'IC150M_2CMD-128256_2D-512256_RMSProp'
 
 model = Sequential(layers=[
-                            Conv2D(16, (3,3), activation='relu', input_shape=(64,64,3)),
+                            Conv2D(150, (3,3), activation='relu', input_shape=(128,128,3)),
                             MaxPooling2D(2,2),
-                            Conv2D(32, (3,3), activation='relu'),
+                            Conv2D(128, (3,3), activation='relu'),
                             MaxPooling2D(2,2),
-                            Dropout(0.1),
-                            Conv2D(64, (3,3), activation='relu'),
+                            Dropout(0.2),
+                            Conv2D(256, (3,3), activation='relu'),
+                            MaxPooling2D(2,2),
+                            Dropout(0.15),
+                            Conv2D(512, (3,3), activation='relu'),
                             MaxPooling2D(2,2),
                             Flatten(),
+                            Dense(512, activation='relu'),
+                            Dropout(0.1),
                             Dense(256, activation='relu'),
-                            Dense(3, activation='softmax')
+                            Dense(29, activation='softmax')
                           ],
                     name=model_name
                     )
-model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.1),
+model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.001),
               metrics=['accuracy'])
 model.summary()
 
 
 #%%
 # Training
+### Callback functions
+
+# Training
 epochs = 50
-lr_schedule = LearningRateScheduler(lambda epoch: 1e-4 * 10**(5))       # epochs/20
+lr_schedule = LearningRateScheduler(lambda epoch: 1e-8 * 10**(epoch / 10))
 history_lrs = model.fit_generator(
                                 train_generator,
-                                steps_per_epoch=25, epochs=100, 
-                                validation_data=val_generator, validation_steps=10,
+                                steps_per_epoch=150, epochs=100, 
+                                validation_data=val_generator, validation_steps=75,
                                 verbose=1, callbacks=[lr_schedule]
                                 )
-
 # Visualizing Learning Rates
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_xlabel('lr', fontsize=18)
-ax.set_ylabel('loss', fontsize=18)
-ax.spines['bottom'].set_color('cyan')
-ax.xaxis.label.set_color('black')
-ax.spines['left'].set_color('cyan')
-ax.yaxis.label.set_color('black')
-ax.tick_params(axis='x', colors='black')
-ax.tick_params(axis='y', colors='black')
-ax.semilogx(history_lrs.history['lr'], history_lrs.history["loss"])
-
+plt.semilogx(history_lrs.history['lr'], history_lrs.history["loss"])
+# plt.axis([1e-8, 1e-3, 0, 300])
 
 #%%
-# Actual training
-### Callback functions
+# Actual Training
 log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+'__'+model_name
 
 ckpt_dir = 'logs/checkpoints/'+model_name+'/'
