@@ -11,7 +11,6 @@ Last modified on: 2020-09-22 at 23:35:29
 #%%
 # Imports
 import os
-import argparse
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -99,14 +98,14 @@ train_datagen = ImageDataGenerator(
                                     )
 train_generator = train_datagen.flow_from_directory(
                                                     train_dir,
-                                                    target_size=(64, 64),
+                                                    target_size=(128, 128),
                                                     batch_size=50,
                                                     class_mode='sparse'
                                                     )
 val_datagen = ImageDataGenerator(rescale=1./255)
 val_generator = val_datagen.flow_from_directory(
                                                     val_dir,
-                                                    target_size=(64, 64),
+                                                    target_size=(128, 128),
                                                     batch_size=25,
                                                     class_mode='sparse'
                                                     )
@@ -116,7 +115,7 @@ val_generator = val_datagen.flow_from_directory(
 model_name = f'2C1D_16x32xd01x64x256_rms'
 
 model = Sequential(layers=[
-                            Conv2D(16, (3,3), activation='relu', input_shape=(64,64,3)),
+                            Conv2D(64, (3,3), activation='relu', input_shape=(128,128,3)),
                             MaxPooling2D(2,2),
                             Conv2D(32, (3,3), activation='relu'),
                             MaxPooling2D(2,2),
@@ -226,7 +225,7 @@ plt.ylabel('Loss')
 plt.legend()
 
 # %%
-
+# Predictions
 img = image.load_img('../Data/cats_dogs_pandas/images/panda.jpg', target_size=(64, 64))
 x = image.img_to_array(img)
 x = np.expand_dims(x, axis=0)
