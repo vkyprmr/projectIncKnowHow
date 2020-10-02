@@ -1,2 +1,2 @@
-# deepdive
-machine learning, deep learning and ai projects
+# projectIncKnowHow
+This repo contains the projects that I undertook to increase my Know-How in the field.
