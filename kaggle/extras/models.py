@@ -9,6 +9,7 @@ Last modified on: 2020-09-25 at 12:08:04
 '''
 
 #%%
+# Imports
 from datetime import datetime
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
