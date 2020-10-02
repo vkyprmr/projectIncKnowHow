@@ -23,10 +23,24 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
 
-# Runtime device and memory
+""" # Runtime device and memory
 physical_devices = tf.config.experimental.list_physical_devices('GPU') 
 for physical_device in physical_devices: 
-        tf.config.experimental.set_memory_growth(physical_device, True)
+        tf.config.experimental.set_memory_growth(physical_device, True) """
+
+gpu_mem = 6
+gpus = tf.config.experimental.list_physical_devices('GPU')
+#The variable GB is the memory size you want to use.
+config = [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=(1024*gpu_mem))]
+if gpus:
+    # Restrict TensorFlow to only allocate 1*X GB of memory on the first GPU
+    try:
+        tf.config.experimental.set_virtual_device_configuration(gpus[0], config)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Virtual devices must be set before GPUs have been initialized
+        print(e)
 
 #%%
 # Arguments
