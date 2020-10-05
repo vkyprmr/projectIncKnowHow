@@ -5,7 +5,7 @@ Created on: 2020-10-5, Mo., 12:49:49
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-5, Mo., 16:53:43
+Last modified on: 2020-10-5, Mon, 17:31:40
 """
 
 
@@ -85,14 +85,14 @@ def plot_image(i, predictions_array, true_label, img):
     else:
         color = 'red'
 
-    plt.xlabel(f'{class_names[predicted_label]} {100 * np.max(predictions_array):2.0f} {class_names[true_label]}',
+    plt.xlabel(f'Pred: {class_names[predicted_label]}\nActual:{class_names[true_label]}\nAccuracy: ({100 * np.max(predictions_array):2.0f}%)',
                color=color)
 
 
 def plot_value_array(i, predictions_array, true_label):
     true_label = true_label[i]
     plt.grid(False)
-    plt.xticks(range(10), class_names, rotation=90)
+    plt.xticks(range(10), class_names, rotation=60)
     plt.yticks([])
     thisplot = plt.bar(range(10), predictions_array, color="#777777")
     plt.ylim([0, 1])
@@ -108,20 +108,20 @@ num_images = num_rows * num_cols
 # plt.figure(figsize=(2*2*num_cols, 2*num_rows))
 idx = []
 for i in range(num_images):
-    r = np.random.randint(0,len(preds))
+    r = np.random.randint(0, len(preds))
     idx.append(r)
 
-for i in idx:
-    plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
-    plot_image(i, preds[i], y_test, x_test)
-    plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
-    plot_value_array(i, preds[i], y_test)
+for i in zip(idx, range(num_images)):
+    plt.subplot(num_rows, 2 * num_cols, 2 * i[1] + 1)
+    plot_image(i[0], preds[i[0]], y_test, x_test)
+    plt.subplot(num_rows, 2 * num_cols, 2 * i[1] + 2)
+    plot_value_array(i[0], preds[i[0]], y_test)
+
+plt.tight_layout()
+plt.show()
 
 # for i in range(num_images):
 #     plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
 #     plot_image(i, preds[i], y_test, x_test)
 #     plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
 #     plot_value_array(i, preds[i], y_test)
-
-plt.tight_layout()
-plt.show()
