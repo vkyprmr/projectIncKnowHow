@@ -5,9 +5,8 @@ Created on: 2020-10-5, Mo., 12:49:49
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-5, Mon, 16:49:14
+Last modified on: 2020-10-5, Mo., 16:53:43
 """
-
 
 
 # Imports
@@ -93,7 +92,7 @@ def plot_image(i, predictions_array, true_label, img):
 def plot_value_array(i, predictions_array, true_label):
     true_label = true_label[i]
     plt.grid(False)
-    plt.xticks(range(10), class_names, rotation=60)
+    plt.xticks(range(10), class_names, rotation=90)
     plt.yticks([])
     thisplot = plt.bar(range(10), predictions_array, color="#777777")
     plt.ylim([0, 1])
@@ -107,10 +106,22 @@ num_rows = 3
 num_cols = 2
 num_images = num_rows * num_cols
 # plt.figure(figsize=(2*2*num_cols, 2*num_rows))
+idx = []
 for i in range(num_images):
+    r = np.random.randint(0,len(preds))
+    idx.append(r)
+
+for i in idx:
     plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
     plot_image(i, preds[i], y_test, x_test)
     plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
     plot_value_array(i, preds[i], y_test)
+
+# for i in range(num_images):
+#     plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
+#     plot_image(i, preds[i], y_test, x_test)
+#     plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
+#     plot_value_array(i, preds[i], y_test)
+
 plt.tight_layout()
 plt.show()
