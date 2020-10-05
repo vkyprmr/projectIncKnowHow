@@ -5,8 +5,10 @@ Created on: 2020-10-5, Mo., 12:49:49
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-5, Mon, 16:36:21
+Last modified on: 2020-10-5, Mon, 16:49:14
 """
+
+
 
 # Imports
 import numpy as np
@@ -52,7 +54,7 @@ model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=[
 model.summary()
 
 # Train the model
-history = model.fit(x_train, y_train, epochs=10, verbose=1)
+history = model.fit(x_train, y_train, epochs=5, verbose=1)
 
 plt.plot(history.history['loss'], label='Loss')
 plt.plot(history.history['accuracy'], label='Accuracy')
@@ -84,14 +86,14 @@ def plot_image(i, predictions_array, true_label, img):
     else:
         color = 'red'
 
-    plt.xlabel(f'{class_names[predicted_label]} {100 * np.max(predictions_array):2.0f%} {class_names[true_label]}',
+    plt.xlabel(f'{class_names[predicted_label]} {100 * np.max(predictions_array):2.0f} {class_names[true_label]}',
                color=color)
 
 
 def plot_value_array(i, predictions_array, true_label):
     true_label = true_label[i]
     plt.grid(False)
-    plt.xticks(range(10), class_names, rotation=45)
+    plt.xticks(range(10), class_names, rotation=60)
     plt.yticks([])
     thisplot = plt.bar(range(10), predictions_array, color="#777777")
     plt.ylim([0, 1])
@@ -102,7 +104,7 @@ def plot_value_array(i, predictions_array, true_label):
 
 
 num_rows = 3
-num_cols = 3
+num_cols = 2
 num_images = num_rows * num_cols
 # plt.figure(figsize=(2*2*num_cols, 2*num_rows))
 for i in range(num_images):
