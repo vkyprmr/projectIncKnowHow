@@ -8,8 +8,6 @@ Modified by: vkyprmr
 Last modified on: 2020-10-5, Mon, 16:36:21
 """
 
-
-
 # Imports
 import numpy as np
 import matplotlib.pyplot as plt
@@ -86,7 +84,7 @@ def plot_image(i, predictions_array, true_label, img):
     else:
         color = 'red'
 
-    plt.xlabel(f'{class_names[predicted_label]} {100*np.max(predictions_array):2.0f%} {class_names[true_label]}',
+    plt.xlabel(f'{class_names[predicted_label]} {100 * np.max(predictions_array):2.0f%} {class_names[true_label]}',
                color=color)
 
 
@@ -105,13 +103,12 @@ def plot_value_array(i, predictions_array, true_label):
 
 num_rows = 3
 num_cols = 3
-num_images = num_rows*num_cols
+num_images = num_rows * num_cols
 # plt.figure(figsize=(2*2*num_cols, 2*num_rows))
 for i in range(num_images):
-    plt.subplot(num_rows, 2*num_cols, 2*i+1)
+    plt.subplot(num_rows, 2 * num_cols, 2 * i + 1)
     plot_image(i, preds[i], y_test, x_test)
-    plt.subplot(num_rows, 2*num_cols, 2*i+2)
+    plt.subplot(num_rows, 2 * num_cols, 2 * i + 2)
     plot_value_array(i, preds[i], y_test)
 plt.tight_layout()
 plt.show()
-
