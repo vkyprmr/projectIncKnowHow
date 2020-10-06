@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-6, Di., 20:57:3
+Last modified on: 2020-10-6, Tue, 21:50:38
 """
 
 # Imports
@@ -27,9 +27,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # Enabling dynamic GPU usage
 device = tf.config.list_physical_devices('GPU')
 try:
-    tf.config.experimental.set_memory_growth(device, True)
+    tf.config.experimental.set_memory_growth(device[0], True)
 except Exception as e:
-    print(e)
+    print(f'Error: {e}')
 
 # Data
 base_dir = '../../../Data/cats_vs_dogs/'
@@ -68,7 +68,7 @@ def sample_images(directory):
         plt.show()
 
 
-sample_images(val_dir)
+# sample_images(val_dir)
 
 # Building the Model
 layers = [
@@ -115,11 +115,11 @@ tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
 es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 callbacks = [tb_callback, es_callback]
 
-spe = 100
-vspe = 50
+spe = 50
+vspe = 25
 epochs = 100
 
-history = model.fit(train_generator, steps_per_epoch=spe,
+history = model.fit(train_generator, epochs=epochs, steps_per_epoch=spe,
                     validation_data=val_generator, validation_steps=vspe,
                     verbose=1, callbacks=callbacks)
 
@@ -127,8 +127,8 @@ history = model.fit(train_generator, steps_per_epoch=spe,
 # Plots
 def plot_metrics():
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex='all')
-    ax[0].plot(history.history['acc'], label='train_acc')
-    ax[0].plot(history.history['val_acc'], label='val_acc')
+    ax[0].plot(history.history['accuracy'], label='train_acc')
+    ax[0].plot(history.history['val_accuracy'], label='val_acc')
     ax[0].set_ylabel('Accuracy')
     ax[0].set_title('Train vs. Validation Accuracy')
     ax[1].plot(history.history['loss'], label='train_loss')
@@ -165,7 +165,7 @@ def make_predictions(directory, trained_model):
             predicted_class = 'cat'
         else:
             predicted_class = 'dog'
-        print(f'The image {img} contains a {predicted_class}.')
+        print(f'The image {img} contains a {predicted_class}. ({(len(imgs)-imgs.index(img))}/len(imgs))')
         preds.append(pred)
         pred_classes.append(predicted_class)
 
