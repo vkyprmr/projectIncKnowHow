@@ -24,6 +24,13 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
+# Enabling dynamic GPU usage
+device = tf.config.list_physical_devices('GPU')
+try:
+    tf.config.experimental.set_memory_growth(device, True)
+except Exception as e:
+    print(e)
+
 # Data
 base_dir = '../../../Data/cats_vs_dogs/'
 train_dir = os.path.join(base_dir, 'train')
@@ -103,7 +110,7 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
                                                 batch_size=100, class_mode='binary')
 
 # Training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-model_name'
+log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
 es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 callbacks = [tb_callback, es_callback]
