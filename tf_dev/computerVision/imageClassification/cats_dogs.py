@@ -19,7 +19,7 @@ import tensorflow as tf
 from datetime import datetime
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
-from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -72,21 +72,33 @@ def sample_images(directory):
 
 # Building the Model
 layers = [
-    Conv2D(64, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+    # MaxPooling2D(2, 2),
+    Conv2D(32, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(128, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
     Conv2D(128, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
     Conv2D(256, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Conv2D(256, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
     Flatten(),
-    Dense(512, activation='relu'),
-    Dropout(0.2),
+    Dense(256, activation='relu'),
+    Dropout(0.1),
     Dense(256, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
-model_name = f'cats_vs_dogs_{len(layers)}-layers_64128256512256'
+model_name = f'cats_vs_dogs_{len(layers)}-layers'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=0.001)
@@ -94,7 +106,15 @@ model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Generating data from directory
-train_datagen = ImageDataGenerator(rescale=1. / 255.0)
+train_datagen = ImageDataGenerator(rescale=1. / 255.0,
+                                   rotation_range=40,
+                                   width_shift_range=0.2,
+                                   height_shift_range=0.2,
+                                   shear_range=0.2,
+                                   zoom_range=0.2,
+                                   horizontal_flip=True,
+                                   fill_mode='nearest'
+                                   )
 """
 Commonly used filters:
     rotation_range=40,
@@ -103,7 +123,7 @@ Commonly used filters:
     shear_range=0.2,
     zoom_range=0.2,
     horizontal_flip=True,
-    fill_mode='nearest
+    fill_mode='nearest'
 Only use in train generator and never on validation generator
  """
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(128, 128),
@@ -115,10 +135,18 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
 
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
+chkpt_dir = 'logs/checkpoints'+model_name+'/'
+if not os.path.exists(chkpt_dir):
+    os.mkdir(chkpt_dir)
+
+path_chkpt = chkpt_dir+datetime.now().strftime('%Y%m%d-%H%M%S')
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
 es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, verbose=1)
-callbacks = [tb_callback, es_callback, rlr_callback]
+rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.1, verbose=1)
+chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
+                                 verbose=1, save_weights_only=True,
+                                 save_best_only=True)
+callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
 
 spe = 100
 vspe = 50
@@ -170,7 +198,7 @@ def make_predictions(directory, trained_model):
             predicted_class = 'cat'
         else:
             predicted_class = 'dog'
-        print(f'The image {img} contains a {predicted_class}. ({(len(imgs)-imgs.index(img))/len(imgs)})')
+        print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
         preds.append(pred)
         pred_classes.append(predicted_class)
 
@@ -182,4 +210,9 @@ def make_predictions(directory, trained_model):
     return results
 
 
-res = make_predictions(test_dir, model)
+# res = make_predictions(test_dir, model)
+
+
+# model.save('logs/model/cats_vs_dogs/model')
+
+# tf.keras.models.load_model('logs/model/cats_vs_dogs/')
