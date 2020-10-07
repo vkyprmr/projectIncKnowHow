@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-7, Wed, 12:56:47
+Last modified on: 2020-10-7, Wed, 13:41:7
 """
 
 # Imports
@@ -145,7 +145,7 @@ def plot_metrics():
     plt.show()
 
 
-plot_metrics()
+# plot_metrics()
 
 
 def make_predictions(directory, trained_model):
