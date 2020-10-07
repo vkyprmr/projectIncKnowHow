@@ -19,7 +19,7 @@ import tensorflow as tf
 from datetime import datetime
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
-from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
+from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -72,18 +72,21 @@ def sample_images(directory):
 
 # Building the Model
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+    Conv2D(64, (3, 3), activation='relu', input_shape=(128, 128, 3)),
     MaxPooling2D(2, 2),
-    # Conv2D(64, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    Dropout(0.2),
-    Conv2D(64, (3, 3), activation='relu'),
+    Conv2D(128, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(256, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
     Flatten(),
-    Dense(128, activation='relu'),
+    Dense(512, activation='relu'),
+    Dropout(0.2),
+    Dense(256, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
-model_name = f'cats_vs_dogs_{len(layers)}-layers_32641282561'
+model_name = f'cats_vs_dogs_{len(layers)}-layers_64128256512256'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=0.001)
@@ -113,11 +116,12 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
-es_callback = EarlyStopping(monitor='val_loss', patience=50, verbose=1)
-callbacks = [tb_callback, es_callback]
+es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, verbose=1)
+callbacks = [tb_callback, es_callback, rlr_callback]
 
-spe = 50
-vspe = 25
+spe = 100
+vspe = 50
 epochs = 100
 
 history = model.fit(train_generator, epochs=epochs, steps_per_epoch=spe,
@@ -166,7 +170,7 @@ def make_predictions(directory, trained_model):
             predicted_class = 'cat'
         else:
             predicted_class = 'dog'
-        print(f'The image {img} contains a {predicted_class}. ({(len(imgs)-imgs.index(img))}/len(imgs))')
+        print(f'The image {img} contains a {predicted_class}. ({(len(imgs)-imgs.index(img))/len(imgs)})')
         preds.append(pred)
         pred_classes.append(predicted_class)
 
