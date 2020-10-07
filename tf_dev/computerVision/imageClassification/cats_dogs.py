@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-6, Tue, 21:50:38
+Last modified on: 2020-10-7, Wed, 12:56:47
 """
 
 # Imports
@@ -18,7 +18,7 @@ import tensorflow as tf
 
 from datetime import datetime
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten
+from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.optimizers import RMSprop
@@ -74,12 +74,13 @@ def sample_images(directory):
 layers = [
     Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
     MaxPooling2D(2, 2),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Dropout(0.2),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
     Flatten(),
-    Dense(256, activation='relu'),
+    Dense(128, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
 model_name = f'cats_vs_dogs_{len(layers)}-layers_32641282561'
@@ -112,7 +113,7 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
-es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+es_callback = EarlyStopping(monitor='val_loss', patience=50, verbose=1)
 callbacks = [tb_callback, es_callback]
 
 spe = 50
@@ -177,4 +178,4 @@ def make_predictions(directory, trained_model):
     return results
 
 
-results = make_predictions(test_dir, model)
+res = make_predictions(test_dir, model)
