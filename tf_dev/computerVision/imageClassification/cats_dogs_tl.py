@@ -5,7 +5,7 @@ Created on: 2020-10-8, Do., 15:37:37
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-8, Do., 16:29:53
+Last modified on: 2020-10-8, Thu, 21:8:30
 """
 
 # Imports
@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+from tqdm import tqdm
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras import Model
@@ -22,6 +23,7 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.applications.inception_v3 import InceptionV3
+from sklearn.metrics import accuracy_score
 
 # Enabling dynamic GPU usage
 device = tf.config.list_physical_devices('GPU')
@@ -35,6 +37,8 @@ base_dir = '../../../Data/cats_vs_dogs/'
 train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'validation')
 test_dir = os.path.join(base_dir, 'test')
+sample_test_dir = os.path.join(base_dir, 'sample_test')
+sample_val_dir = os.path.join(base_dir, 'sample_val')
 
 # Pre-trained model
 weights_file = 'transfer_learning/inception_v3_weights_tf_dim_ordering_tf_kernels_notop.h5'
@@ -87,25 +91,20 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
 
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints' + model_name + '/'
-if not os.path.exists(chkpt_dir):
-    os.mkdir(chkpt_dir)
 
-path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S')
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
-es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.1, verbose=1)
-chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
-                                 verbose=1, save_weights_only=True,
-                                 save_best_only=True)
-callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
+es_callback = EarlyStopping(monitor='loss', patience=5, min_delta=0.05,
+                            restore_best_weights=True, verbose=1)
+rlr_callback = ReduceLROnPlateau(monitor='loss', patience=3, factor=0.1, verbose=1)  # cooldown=5
+
+callbacks = [tb_callback, es_callback, rlr_callback]
 
 spe = 100
 vspe = 50
-epochs = 100
+epochs = 25
 
 history = model.fit(train_generator, epochs=epochs, steps_per_epoch=spe,
-                    validation_data=val_generator, validation_steps=vspe,
+                    # validation_data=val_generator, validation_steps=vspe,
                     verbose=1, callbacks=callbacks)
 
 
@@ -128,19 +127,22 @@ def plot_metrics():
 # plot_metrics()
 
 
-def make_predictions(directory, trained_model):
+def make_predictions(directory, trained_model, label=False):
     """
     Args:
         directory: directory where test images are located
         trained_model: trained model
+        label: False, use True when using sample_test_dir
     Returns: a dataframe containing names of images and respective predictions and classes
+             and accuracy
     """
     imgs = os.listdir(directory)
     preds = []
     pred_classes = []
+    actual_classes = []
     print(f'Found {len(imgs)} images to predict.')
-    for img in imgs:
-        img_path = os.path.join(test_dir, img)
+    for img in tqdm(imgs, ncols=100):
+        img_path = os.path.join(directory, img)
         pic = image.load_img(img_path, target_size=(128, 128))
         x = image.img_to_array(pic)
         x = np.expand_dims(x, axis=0)
@@ -150,19 +152,26 @@ def make_predictions(directory, trained_model):
             predicted_class = 'cat'
         else:
             predicted_class = 'dog'
-        print(f'The image {img} contains a {predicted_class}. ({len(imgs) - imgs.index(img)}/{len(imgs)})')
+        # print(f'The image {img} contains a {predicted_class}. ({imgs.index(img) + 1}/{len(imgs)})')
         preds.append(pred)
         pred_classes.append(predicted_class)
+        if label:
+            if 'cat' in img:
+                actual_classes.append('cat')
+            else:
+                actual_classes.append('dog')
 
     results = pd.DataFrame(columns=['Image', 'Prediction', 'Class'])
     results.Image = imgs
     results.Prediction = preds
     results.Class = pred_classes
 
-    return results
+    accuracy = accuracy_score(pred_classes, actual_classes)
 
-# res = make_predictions(test_dir, model)
+    return results, accuracy
 
+
+res, acc = make_predictions(sample_val_dir, model, label=True)
 
 # model.save('logs/model/cats_vs_dogs/model')
 
