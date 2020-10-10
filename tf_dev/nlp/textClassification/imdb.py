@@ -64,6 +64,9 @@ s_train_padded = pad_sequences(s_train, maxlen=max_length, truncating=trunc_type
 s_test = tokenizer.texts_to_sequences(x_test)
 s_test_padded = pad_sequences(s_test, maxlen=max_length)
 
+s_train_padded = np.asarray(s_train_padded)
+s_test_padded = np.asarray(s_test_padded)
+
 # Decoder for reviews
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
@@ -78,19 +81,19 @@ print(s_train[3])
 # Building the model
 model_name = f'imdb_embeddings-{vocab_size}_{embedding_dim}_{max_length}'
 layers = [
-    Embedding(vocab_size, embedding_dim, input_shape=max_length),
+    Embedding(vocab_size, embedding_dim, input_shape=(max_length,)),
     Flatten(),  # GlobalAveragePooling1D
     Dense(8, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
 model = Sequential(layers=layers, name=model_name)
 opt = Adam(lr=0.01)
-model.compile(optimzer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Preperation for training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints' + model_name + '/'
+chkpt_dir = 'logs/checkpoints_' + model_name + '/'
 if not os.path.exists(chkpt_dir):
     os.mkdir(chkpt_dir)
 
@@ -104,7 +107,7 @@ chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
 callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
 
 epochs = 100
-history = model.train(s_train_padded, y_train, epochs=epochs, validation_data=(s_test_padded, y_test), verbose=1)
+history = model.fit(s_train_padded, y_train, epochs=epochs, validation_data=(s_test_padded, y_test), verbose=1)
 
 
 # Plots
