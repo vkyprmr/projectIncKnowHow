@@ -128,18 +128,18 @@ def plot_metrics():
 # plot_metrics()
 
 # Storing data and visualize embeddings
-# e = model.layers[0]
-# weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
-#
-# vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-# meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-# vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
-# meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
-#
-# for i in range(1, vocab_size):
-#     word = reverse_word_index[i]
-#     embeddings = weights[i]
-#     meta_out.write(f'{word}\n')
-#     vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
-# vectors_out.close()
-# meta_out.close()
+e = model.layers[0]
+weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
+
+vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
+meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
+
+for i in range(1, vocab_size):
+    word = reverse_word_index[i]
+    embeddings = weights[i]
+    meta_out.write(f'{word}\n')
+    vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
+vectors_out.close()
+meta_out.close()
