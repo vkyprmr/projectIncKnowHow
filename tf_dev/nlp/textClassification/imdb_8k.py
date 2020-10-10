@@ -35,14 +35,24 @@ except Exception as e:
 data, meta_data = tfds.load('imdb_reviews/subwords8k', with_info=True, as_supervised=True)
 train, test = data['train'], data['test']
 
+# x_train, y_train = [], []
+# x_test, y_test = [], []
+#
+# for x, y in train:
+#     x_train.append(x.numpy())
+#     y_train.append(y.numpy())
+#
+# for x, y in test:
+#     x_test.append(x.numpy())
+#     y_test.append(y.numpy())
+#
+# y_train, y_test = np.array(y_train), np.array(y_test)
+
 # Embedding
 tokenizer = meta_data.features['text'].encoder
 
 vocab_size = tokenizer.vocab_size
 embedding_dim = 64
-# max_length = 120
-trunc_type = 'post'
-oov_token = '<oov>'
 
 # Building the model
 model_name = f'imdb_8k-{vocab_size}_{embedding_dim}'
@@ -59,23 +69,23 @@ model.summary()
 
 # Preperation for training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints_' + model_name + '/'
-if not os.path.exists(chkpt_dir):
-    os.mkdir(chkpt_dir)
-
-path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S')
-tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
-es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.1, verbose=1)
-chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
-                                 verbose=1, save_weights_only=True,
-                                 save_best_only=True)
-callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
+# chkpt_dir = 'logs/checkpoints_' + model_name + '/'
+# if not os.path.exists(chkpt_dir):
+#     os.mkdir(chkpt_dir)
+#
+# path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S')
+# tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
+# es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+# rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.1, verbose=1)
+# chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
+#                                  verbose=1, save_weights_only=True,
+#                                  save_best_only=True)
+# callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
 
 epochs = 100
 history = model.fit(train, epochs=epochs,
                     validation_data=test,
-                    verbose=1, callbacks=callbacks)
+                    verbose=1)
 
 
 # Plots
