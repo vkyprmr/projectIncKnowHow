@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 17:42:45
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sa., 22:41:13
+Last modified on: 2020-10-10, Sat, 23:18:34
 """
 
 # Imports
@@ -54,19 +54,20 @@ x_test = sentences[train_size:]
 y_test = labels[train_size:]
 
 # Tokenizing
-text_tokenizer = Tokenizer(num_words=vocab_size, oov_token='<oov>')
-text_tokenizer.fit_on_texts(sentences)
-s_train = text_tokenizer.texts_to_sequences(x_train)
+tokenizer = Tokenizer(num_words=vocab_size, oov_token='<oov>')
+tokenizer.fit_on_texts(sentences)
+word_index = tokenizer.word_index
+s_train = tokenizer.texts_to_sequences(x_train)
 s_train_padded = pad_sequences(s_train, maxlen=max_length,
                                padding=padding_type, truncating=trunc_type)
-s_test = text_tokenizer.texts_to_sequences(x_test)
+s_test = tokenizer.texts_to_sequences(x_test)
 s_test_padded = pad_sequences(s_test, maxlen=max_length,
                               padding=padding_type, truncating=trunc_type)
 
 label_tokenizer = Tokenizer()
 label_tokenizer.fit_on_texts(labels)
-l_train = label_tokenizer.texts_to_sequences(y_train)
-l_test = label_tokenizer.texts_to_sequences(y_test)
+l_train = np.array(label_tokenizer.texts_to_sequences(y_train))
+l_test = np.array(label_tokenizer.texts_to_sequences(y_test))
 
 # Decoder for reviews
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
@@ -80,16 +81,17 @@ print(decode_review(s_train_padded[3]))
 print(s_train[3])
 
 # Building the model
-model_name = f'bbc-{vocab_size}_{embedding_dim}_{max_length}'
+lr = 0.0001
+model_name = f'bbc-{vocab_size}_{embedding_dim}_{max_length}-LR_{lr}'
 layers = [
     Embedding(vocab_size, embedding_dim, input_shape=(max_length,)),
     GlobalAveragePooling1D(),  # GlobalAveragePooling1D, Flatten
-    Dense(6, activation='relu'),
-    Dense(1, activation='sigmoid')
+    Dense(24, activation='relu'),
+    Dense(6, activation='sigmoid')
 ]
 model = Sequential(layers=layers, name=model_name)
-opt = Adam(lr=0.01)
-model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+opt = Adam(lr=lr)
+model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Preperation for training
@@ -108,8 +110,8 @@ chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
 callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
 
 epochs = 100
-history = model.fit(s_train_padded, y_train, epochs=epochs,
-                    validation_data=(s_test_padded, y_test),
+history = model.fit(s_train_padded, l_train, epochs=epochs,
+                    validation_data=(s_test_padded, l_test),
                     verbose=1, callbacks=callbacks)
 
 
@@ -129,22 +131,22 @@ def plot_metrics():
     plt.show()
 
 
-# plot_metrics()
+plot_metrics()
 
 # Storing data and visualize embeddings
-e = model.layers[0]
-weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
-
-vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
-meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
-
-for i in range(1, vocab_size):
-    word = reverse_word_index[i]
-    embeddings = weights[i]
-    meta_out.write(f'{word}\n')
-    vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
-vectors_out.close()
-meta_out.close()
+# e = model.layers[0]
+# weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
+#
+# vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
+# meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
+#
+# for i in range(1, vocab_size):
+#     word = reverse_word_index[i]
+#     embeddings = weights[i]
+#     meta_out.write(f'{word}\n')
+#     vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
+# vectors_out.close()
+# meta_out.close()
 
