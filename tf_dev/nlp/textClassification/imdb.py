@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 18:3:1
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sa., 18:42:31
+Last modified on: 2020-10-10, Sat, 20:38:26
 """
 
 # Imports
@@ -40,7 +40,7 @@ x_test, y_test = [], []
 
 for x, y in train:
     x_train.append(str(x.numpy()))
-    y_train.append(y.numpy)
+    y_train.append(y.numpy())
 
 for x, y in test:
     x_test.append(str(x.numpy()))
@@ -63,9 +63,6 @@ s_train_padded = pad_sequences(s_train, maxlen=max_length, truncating=trunc_type
 
 s_test = tokenizer.texts_to_sequences(x_test)
 s_test_padded = pad_sequences(s_test, maxlen=max_length)
-
-s_train_padded = np.asarray(s_train_padded)
-s_test_padded = np.asarray(s_test_padded)
 
 # Decoder for reviews
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
@@ -129,18 +126,18 @@ def plot_metrics():
 # plot_metrics()
 
 # Storing data and visualize embeddings
-e = model.layers[0]
-weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
-
-vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
-meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
-
-for i in range(1, vocab_size):
-    word = reverse_word_index[i]
-    embeddings = weights[i]
-    meta_out.write(f'{word}\n')
-    vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
-vectors_out.close()
-meta_out.close()
+# e = model.layers[0]
+# weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
+#
+# vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
+# meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
+#
+# for i in range(1, vocab_size):
+#     word = reverse_word_index[i]
+#     embeddings = weights[i]
+#     meta_out.write(f'{word}\n')
+#     vectors_out.write('\t'.join([str(x) for x in embeddings]) + '\n')
+# vectors_out.close()
+# meta_out.close()
