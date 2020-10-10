@@ -88,6 +88,8 @@ history = model.fit(train, epochs=epochs,
                     verbose=1)
 
 
+# ToDo: fix shape error raising while training
+
 # Plots
 def plot_metrics():
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex='all')
@@ -102,6 +104,5 @@ def plot_metrics():
     plt.legend()
     plt.xlabel('Epochs')
     plt.show()
-
 
 # plot_metrics()
