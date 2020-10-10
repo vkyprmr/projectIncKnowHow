@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 18:3:1
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sat, 20:38:26
+Last modified on: 2020-10-10, Sat, 20:41:9
 """
 
 # Imports
@@ -80,7 +80,7 @@ model_name = f'imdb_embeddings-{vocab_size}_{embedding_dim}_{max_length}'
 layers = [
     Embedding(vocab_size, embedding_dim, input_shape=(max_length,)),
     Flatten(),  # GlobalAveragePooling1D
-    Dense(8, activation='relu'),
+    Dense(6, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
 model = Sequential(layers=layers, name=model_name)
@@ -104,7 +104,9 @@ chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
 callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
 
 epochs = 100
-history = model.fit(s_train_padded, y_train, epochs=epochs, validation_data=(s_test_padded, y_test), verbose=1)
+history = model.fit(s_train_padded, y_train, epochs=epochs,
+                    validation_data=(s_test_padded, y_test),
+                    verbose=1, callbacks=callbacks)
 
 
 # Plots
