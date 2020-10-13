@@ -1,4 +1,4 @@
 # NLP - Text classification
 Scripts developed when practicing for TensorFlow Developer Certificate.
 The name itslef suggests that this directory focuses on projects on text classification.
-General scripts are included in this directory.
+This directory contains simple model without the use of RNNs or CNNs.

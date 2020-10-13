@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 21:24:29
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sa., 21:31:47
+Last modified on: 2020-10-13, Di., 17:11:24
 """
 
 # Imports
@@ -68,8 +68,8 @@ model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Preperation for training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-# chkpt_dir = 'logs/checkpoints_' + model_name + '/'
+log_dir = "..\\logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
+# chkpt_dir = '../logs/checkpoints_' + model_name + '/'
 # if not os.path.exists(chkpt_dir):
 #     os.mkdir(chkpt_dir)
 #

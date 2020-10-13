@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 18:3:1
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sat, 20:41:9
+Last modified on: 2020-10-13, Di., 17:10:40
 """
 
 # Imports
@@ -89,8 +89,8 @@ model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Preperation for training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints_' + model_name + '/'
+log_dir = "..\\logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
+chkpt_dir = '../logs/checkpoints_' + model_name + '/'
 if not os.path.exists(chkpt_dir):
     os.mkdir(chkpt_dir)
 
@@ -131,8 +131,8 @@ def plot_metrics():
 e = model.layers[0]
 weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
 
-vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+vectors_file = f'../logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+meta_data_file = f'../logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
 vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
 meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
 

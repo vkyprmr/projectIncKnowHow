@@ -5,7 +5,7 @@ Created on: 2020-10-10, Sa., 17:42:45
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-10, Sat, 23:18:34
+Last modified on: 2020-10-13, Di., 17:10:3
 """
 
 # Imports
@@ -31,7 +31,7 @@ except Exception as e:
     print(f'Error: {e}')
 
 # Data
-file_loc = '../../../Data/bbc/bbc_text.csv'
+file_loc = '../../../../Data/bbc/bbc_text.csv'
 df = pd.read_csv(file_loc)
 
 sentences = df.text.to_list()
@@ -95,8 +95,8 @@ model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['a
 model.summary()
 
 # Preperation for training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints_' + model_name + '/'
+log_dir = "..\\logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
+chkpt_dir = '../logs/checkpoints_' + model_name + '/'
 if not os.path.exists(chkpt_dir):
     os.mkdir(chkpt_dir)
 
@@ -137,8 +137,8 @@ plot_metrics()
 # e = model.layers[0]
 # weights = e.get_weights()[0]  # weights.shape = (vocab_size, embedding_dim)
 #
-# vectors_file = f'logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
-# meta_data_file = f'logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# vectors_file = f'../logs/embedding_data/vectors_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
+# meta_data_file = f'../logs/embedding_data/meta_data_{model_name}-{datetime.now().strftime("%Y%m%d-%H%M%S")}.tsv'
 # vectors_out = io.open(vectors_file, 'w', encoding='utf-8')
 # meta_out = io.open(meta_data_file, 'w', encoding='utf-8')
 #
