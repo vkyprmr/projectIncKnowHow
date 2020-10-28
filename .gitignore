@@ -33,6 +33,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Dd]ata/*/
+tf_models/
 
 # Pycharm
 .idea/
