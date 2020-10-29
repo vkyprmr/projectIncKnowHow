@@ -12,6 +12,7 @@
 *.h5
 *.csv
 *.xlsx
+*.data*
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
