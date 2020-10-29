@@ -72,59 +72,27 @@ def sample_images(directory):
 # sample_images(val_dir)
 
 # Building the Model
-# layers = [
-#     Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
-#     # MaxPooling2D(2, 2),
-#     Conv2D(32, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Conv2D(64, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     Conv2D(64, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Conv2D(32, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     Conv2D(32, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Conv2D(64, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     Conv2D(64, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Flatten(),
-#     Dense(256, activation='relu'),
-#     Dropout(0.1),
-#     Dense(256, activation='relu'),
-#     Dense(1, activation='sigmoid')
-# ]
-
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.2),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(32, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.2),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(160, 160, 3)),
+    # MaxPooling2D(2, 2),
     Conv2D(32, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
     Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(32, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Conv2D(32, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
     Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
-    # Dropout(0.2),
+    Dropout(0.1),
     Flatten(),
     Dense(256, activation='relu'),
     Dropout(0.1),
@@ -132,10 +100,42 @@ layers = [
     Dense(1, activation='sigmoid')
 ]
 
+# layers = [
+#     Conv2D(32, (3, 3), activation='relu', input_shape=(160, 160, 3)),
+#     # MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Conv2D(64, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Conv2D(128, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     Dropout(0.2),
+#     Conv2D(128, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     # Conv2D(32, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     # Dropout(0.2),
+#     # Conv2D(64, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     # Dropout(0.1),
+#     # Conv2D(128, (3, 3), activation='relu'),
+#     # # MaxPooling2D(2, 2),
+#     # Dropout(0.1),
+#     # Conv2D(64, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     # Dropout(0.2),
+#     Flatten(),
+#     Dense(128, activation='relu'),
+#     Dropout(0.1),
+#     Dense(256, activation='relu'),
+#     Dense(1, activation='sigmoid')
+# ]
+
 model_name = f'cats_vs_dogs_{len(layers)}-layers'
 
 model = Sequential(layers=layers, name=model_name)
-opt = SGD(lr=1e-2)
+opt = RMSprop(lr=1e-3)
 model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
@@ -160,11 +160,11 @@ Commonly used filters:
     fill_mode='nearest'
 Only use in train generator and never on validation generator
  """
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150, 150),
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(160, 160),
                                                     batch_size=100, class_mode='binary')
 
 val_datagen = ImageDataGenerator(rescale=1. / 255.0)
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(150, 150),
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(160, 160),
                                                 batch_size=100, class_mode='binary')
 
 # Training
@@ -230,7 +230,7 @@ def make_predictions(directory, trained_model):
     print(f'Found {len(imgs)} images to predict.')
     for img in tqdm(imgs, desc='Prediction progress:'):
         img_path = os.path.join(directory, img)
-        pic = image.load_img(img_path, target_size=(150, 150))
+        pic = image.load_img(img_path, target_size=(160, 160))
         x = image.img_to_array(pic)
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
