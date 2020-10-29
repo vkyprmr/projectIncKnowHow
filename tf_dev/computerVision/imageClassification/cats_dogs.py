@@ -210,7 +210,7 @@ def plot_metrics(history):
     plt.show()
 
 
- plot_metrics(hist)
+plot_metrics(hist)
 
 
 def make_predictions(directory, trained_model):
@@ -248,7 +248,7 @@ def make_predictions(directory, trained_model):
     return results
 
 
- res = make_predictions(test_dir, model)
+res = make_predictions(test_dir, model)
 
 
 # model.save('logs/model/cats_vs_dogs/model')
