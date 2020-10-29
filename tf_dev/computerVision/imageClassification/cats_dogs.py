@@ -101,7 +101,7 @@ def sample_images(directory):
 # ]
 
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(200, 200, 3)),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
     MaxPooling2D(2, 2),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
@@ -156,11 +156,11 @@ Commonly used filters:
     fill_mode='nearest'
 Only use in train generator and never on validation generator
  """
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(200, 200),
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150, 150),
                                                     batch_size=100, class_mode='binary')
 
 val_datagen = ImageDataGenerator(rescale=1. / 255.0)
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(200, 200),
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(150, 150),
                                                 batch_size=100, class_mode='binary')
 
 # Training
@@ -226,7 +226,7 @@ def make_predictions(directory, trained_model):
     print(f'Found {len(imgs)} images to predict.')
     for img in tqdm(imgs, desc='Prediction progress:'):
         img_path = os.path.join(directory, img)
-        pic = image.load_img(img_path, target_size=(200, 200))
+        pic = image.load_img(img_path, target_size=(150, 150))
         x = image.img_to_array(pic)
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
