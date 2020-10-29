@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from tqdm import tqdm
 import tensorflow as tf
 
 from datetime import datetime
@@ -71,37 +72,66 @@ def sample_images(directory):
 # sample_images(val_dir)
 
 # Building the Model
+# layers = [
+#     Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+#     # MaxPooling2D(2, 2),
+#     Conv2D(32, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Conv2D(64, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     Conv2D(64, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Conv2D(32, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     Conv2D(32, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Conv2D(64, (3, 3), activation='relu'),
+#     # MaxPooling2D(2, 2),
+#     Conv2D(64, (3, 3), activation='relu'),
+#     MaxPooling2D(2, 2),
+#     Dropout(0.1),
+#     Flatten(),
+#     Dense(256, activation='relu'),
+#     Dropout(0.1),
+#     Dense(256, activation='relu'),
+#     Dense(1, activation='sigmoid')
+# ]
+
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
-    # MaxPooling2D(2, 2),
-    Conv2D(32, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu', input_shape=(128, 128, 3)),
     MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(64, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(128, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    Conv2D(128, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(256, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
     Conv2D(256, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
+    Conv2D(512, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
+    # Conv2D(32, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Conv2D(32, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
     Flatten(),
     Dense(256, activation='relu'),
     Dropout(0.1),
     Dense(256, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
+
 model_name = f'cats_vs_dogs_{len(layers)}-layers'
 
 model = Sequential(layers=layers, name=model_name)
-opt = RMSprop(lr=0.001)
+opt = RMSprop(lr=1e-3)
 model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
@@ -135,30 +165,37 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
 
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints'+model_name+'/'
+chkpt_dir = 'logs/checkpoints' + model_name + '/'
 if not os.path.exists(chkpt_dir):
     os.mkdir(chkpt_dir)
 
-path_chkpt = chkpt_dir+datetime.now().strftime('%Y%m%d-%H%M%S')
+path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S')
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
-es_callback = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
-rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=5, factor=0.1, verbose=1)
+es_callback = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
+rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=10, factor=0.1, verbose=1)
 chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
                                  verbose=1, save_weights_only=True,
                                  save_best_only=True)
-callbacks = [tb_callback, es_callback, rlr_callback, chkpt_callback]
+callbacks = [tb_callback, chkpt_callback, rlr_callback, es_callback]
 
 spe = 100
 vspe = 50
 epochs = 100
 
-history = model.fit(train_generator, epochs=epochs, steps_per_epoch=spe,
-                    validation_data=val_generator, validation_steps=vspe,
-                    verbose=1, callbacks=callbacks)
+hist = model.fit(train_generator, epochs=epochs, steps_per_epoch=spe,
+                 validation_data=val_generator, validation_steps=vspe,
+                 verbose=1, callbacks=callbacks)
 
 
 # Plots
-def plot_metrics():
+def plot_metrics(history):
+    """
+    Args:
+        history: history object assigned while training
+
+    Returns:
+
+    """
     fig, ax = plt.subplots(nrows=2, ncols=1, sharex='all')
     ax[0].plot(history.history['accuracy'], label='train_acc')
     ax[0].plot(history.history['val_accuracy'], label='val_acc')
@@ -173,7 +210,7 @@ def plot_metrics():
     plt.show()
 
 
-# plot_metrics()
+# plot_metrics(hist)
 
 
 def make_predictions(directory, trained_model):
@@ -187,20 +224,21 @@ def make_predictions(directory, trained_model):
     preds = []
     pred_classes = []
     print(f'Found {len(imgs)} images to predict.')
-    for img in imgs:
-        img_path = os.path.join(test_dir, img)
+    for img in tqdm(imgs, desc='Prediction progress:'):
+        img_path = os.path.join(directory, img)
         pic = image.load_img(img_path, target_size=(128, 128))
         x = image.img_to_array(pic)
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
         pred = trained_model.predict(x)
-        if pred > 0.5:
-            predicted_class = 'cat'
-        else:
-            predicted_class = 'dog'
-        print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
+        # if pred > 0.5:
+        #     predicted_class = 'cat'
+        # else:
+        #     predicted_class = 'dog'
+        # print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
+        print(pred)
         preds.append(pred)
-        pred_classes.append(predicted_class)
+        # pred_classes.append(predicted_class)
 
     results = pd.DataFrame(columns=['Image', 'Prediction', 'Class'])
     results.Image = imgs
@@ -208,7 +246,6 @@ def make_predictions(directory, trained_model):
     results.Class = pred_classes
 
     return results
-
 
 # res = make_predictions(test_dir, model)
 
