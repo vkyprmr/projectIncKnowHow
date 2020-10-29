@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-7, Wed, 13:41:7
+Last modified on: 2020-10-29, Do., 19:31:54
 """
 
 # Imports
@@ -22,7 +22,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout
 from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.preprocessing import image
-from tensorflow.keras.optimizers import RMSprop
+from tensorflow.keras.optimizers import RMSprop, SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # Enabling dynamic GPU usage
@@ -101,12 +101,12 @@ def sample_images(directory):
 # ]
 
 layers = [
-    Conv2D(64, (3, 3), activation='relu', input_shape=(128, 128, 3)),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(256, 256, 3)),
     MaxPooling2D(2, 2),
-    Conv2D(256, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
-    Conv2D(512, (3, 3), activation='relu'),
+    Conv2D(128, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
     # Conv2D(64, (3, 3), activation='relu'),
     # MaxPooling2D(2, 2),
@@ -131,7 +131,7 @@ layers = [
 model_name = f'cats_vs_dogs_{len(layers)}-layers'
 
 model = Sequential(layers=layers, name=model_name)
-opt = RMSprop(lr=1e-3)
+opt = SGD(lr=1e-2)
 model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
@@ -156,11 +156,11 @@ Commonly used filters:
     fill_mode='nearest'
 Only use in train generator and never on validation generator
  """
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(128, 128),
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(256, 256),
                                                     batch_size=100, class_mode='binary')
 
 val_datagen = ImageDataGenerator(rescale=1. / 255.0)
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(128, 128),
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(256, 256),
                                                 batch_size=100, class_mode='binary')
 
 # Training
@@ -210,7 +210,7 @@ def plot_metrics(history):
     plt.show()
 
 
-# plot_metrics(hist)
+ plot_metrics(hist)
 
 
 def make_predictions(directory, trained_model):
@@ -226,7 +226,7 @@ def make_predictions(directory, trained_model):
     print(f'Found {len(imgs)} images to predict.')
     for img in tqdm(imgs, desc='Prediction progress:'):
         img_path = os.path.join(directory, img)
-        pic = image.load_img(img_path, target_size=(128, 128))
+        pic = image.load_img(img_path, target_size=(256, 256))
         x = image.img_to_array(pic)
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
@@ -247,7 +247,8 @@ def make_predictions(directory, trained_model):
 
     return results
 
-# res = make_predictions(test_dir, model)
+
+ res = make_predictions(test_dir, model)
 
 
 # model.save('logs/model/cats_vs_dogs/model')
