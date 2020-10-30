@@ -93,18 +93,18 @@ layers = [
     # Conv2D(64, (3, 3), activation='relu'),
     # MaxPooling2D(2, 2),
     # Dropout(0.1),
-    # Flatten(),
+    Flatten(),
     # Dense(256, activation='relu'),
     # Dropout(0.1),
     Dense(128, activation='relu'),
-    Dense(2, activation='softmax')
+    Dense(1, activation='sigmoid')
 ]
 
-model_name = f'cats_vs_dogs_{len(layers)}-layers_with_augmentation-CMCM-1D_rms-1e-3'
+model_name = f'cats_vs_dogs_{len(layers)}-layers_with_augmentation-CMCM-1D_rms-1e-3_binary'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=1e-3)
-model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Generating data from directory
@@ -129,11 +129,11 @@ Commonly used filters:
 Only use in train generator and never on validation generator
  """
 train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150, 150),
-                                                    batch_size=100, class_mode='categorical')
+                                                    batch_size=100, class_mode='binary')
 
 val_datagen = ImageDataGenerator(rescale=1. / 255.0)
 val_generator = val_datagen.flow_from_directory(val_dir, target_size=(150, 150),
-                                                batch_size=100, class_mode='categorical')
+                                                batch_size=100, class_mode='binary')
 
 # Training
 log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name
