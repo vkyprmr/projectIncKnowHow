@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-30, Fri, 18:39:54
+Last modified on: 2020-10-30, Fri, 23:2:6
 """
 
 # Imports
@@ -15,6 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from tqdm import tqdm
+from pathlib import Path
 import tensorflow as tf
 
 from datetime import datetime
@@ -77,9 +78,9 @@ layers = [
     MaxPooling2D(2, 2),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
-    # Dropout(0.1),
-    # Conv2D(64, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D(2, 2),
     # Conv2D(64, (3, 3), activation='relu'),
     # MaxPooling2D(2, 2),
     # Dropout(0.1),
@@ -100,7 +101,7 @@ layers = [
     Dense(1, activation='sigmoid')
 ]
 
-model_name = f'cats_vs_dogs_{len(layers)}-layers_with_augmentation-CMCM-1D_rms-1e-3_binary'
+model_name = f'cvd_{len(layers)}-layersWaug-CMCMD-1D_rms_bin'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=1e-3)
@@ -136,16 +137,21 @@ val_generator = val_datagen.flow_from_directory(val_dir, target_size=(150, 150),
                                                 batch_size=100, class_mode='binary')
 
 # Training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name
-chkpt_dir = 'logs/saved_models/ckpt/ckpt_' + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name + '/'
+log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name
+chkpt_dir = 'logs/ckpt/cvd/'
+
 if not os.path.exists(chkpt_dir):
+    print('Created ckpt directory.')
     os.mkdir(chkpt_dir)
 
-path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S')
+path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S') + '.ckpt'
+
+path_chkpt = Path(path_chkpt)
+
 tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
 es_callback = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
 rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=10, factor=0.1, verbose=1)
-chkpt_callback = ModelCheckpoint(filepath=path_chkpt, monitor='val_loss',
+chkpt_callback = ModelCheckpoint(filepath=path_chkpt.absolute(), monitor='val_loss',
                                  verbose=1, save_weights_only=True,
                                  save_best_only=True)
 callbacks = [tb_callback, chkpt_callback, rlr_callback, es_callback]
@@ -200,34 +206,38 @@ def make_predictions(directory, trained_model):
         img_path = os.path.join(directory, img)
         pic = image.load_img(img_path, target_size=(150, 150))
         x = image.img_to_array(pic)
-        x = x/255.0
+        x = x / 255.0
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
         pred = trained_model.predict(x)
-        print(type(pred))
+        # print(type(pred))
+        # print(pred)
+        # print(pred.shape)
         if pred[0][0] > 0.5:
-            predicted_class = 'cat'
-        else:
             predicted_class = 'dog'
+            preds.append(pred[0][0]*100)
+        else:
+            predicted_class = 'cat'
+            preds.append((1 - pred[0][0]) * 100)
         # print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
-        print(img, pred)
-        preds.append(pred)
+        # print(img, pred)
         pred_classes.append(predicted_class)
 
-    results = pd.DataFrame(columns=['Image', 'Prediction', 'Class'])
+    results = pd.DataFrame(columns=['Image', 'Predicted_class', 'Prediction_prob'])
     results.Image = imgs
-    results.Prediction = preds
-    results.Class = pred_classes
+    results.Prediction_prob = preds
+    results.Predicted_class = pred_classes
 
     return results
 
 
-res = make_predictions(test_dir, model)
-# image_dir = '../../../Data/cats_vs_dogs/image/single'
+# res = make_predictions(test_dir, model)
+# image_dir = '../../../Data/cats_vs_dogs/sample_test/'
 # res = make_predictions(image_dir, model)
 
+
 # Saving the entire model
-model_save_dir = 'logs/saved_models/models/' + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + 'model_name'
+model_save_dir = 'logs/saved_models/' + datetime.now().strftime("%Y%m%d-%H%M%S")
 model.save(model_save_dir)
 
 # Loading the model
