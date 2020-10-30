@@ -5,7 +5,7 @@ Created on: 2020-10-6, Di., 18:58:28
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-10-29, Do., 19:31:54
+Last modified on: 2020-10-30, Fri, 18:39:54
 """
 
 # Imports
@@ -73,70 +73,38 @@ def sample_images(directory):
 
 # Building the Model
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(160, 160, 3)),
-    # MaxPooling2D(2, 2),
-    Conv2D(32, (3, 3), activation='relu'),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
     MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(64, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
     Conv2D(64, (3, 3), activation='relu'),
     MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(32, (3, 3), activation='relu'),
+    # Dropout(0.1),
+    # Conv2D(64, (3, 3), activation='relu'),
     # MaxPooling2D(2, 2),
-    Conv2D(32, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Conv2D(64, (3, 3), activation='relu'),
+    # Conv2D(64, (3, 3), activation='relu'),
     # MaxPooling2D(2, 2),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Dropout(0.1),
-    Flatten(),
-    Dense(256, activation='relu'),
-    Dropout(0.1),
-    Dense(256, activation='relu'),
-    Dense(1, activation='sigmoid')
+    # Dropout(0.1),
+    # Conv2D(32, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Conv2D(32, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Conv2D(64, (3, 3), activation='relu'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
+    # Flatten(),
+    # Dense(256, activation='relu'),
+    # Dropout(0.1),
+    Dense(128, activation='relu'),
+    Dense(2, activation='softmax')
 ]
 
-# layers = [
-#     Conv2D(32, (3, 3), activation='relu', input_shape=(160, 160, 3)),
-#     # MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Conv2D(64, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     Conv2D(128, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     Dropout(0.2),
-#     Conv2D(128, (3, 3), activation='relu'),
-#     MaxPooling2D(2, 2),
-#     Dropout(0.1),
-#     # Conv2D(32, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     # Dropout(0.2),
-#     # Conv2D(64, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     # Dropout(0.1),
-#     # Conv2D(128, (3, 3), activation='relu'),
-#     # # MaxPooling2D(2, 2),
-#     # Dropout(0.1),
-#     # Conv2D(64, (3, 3), activation='relu'),
-#     # MaxPooling2D(2, 2),
-#     # Dropout(0.2),
-#     Flatten(),
-#     Dense(128, activation='relu'),
-#     Dropout(0.1),
-#     Dense(256, activation='relu'),
-#     Dense(1, activation='sigmoid')
-# ]
-
-model_name = f'cats_vs_dogs_{len(layers)}-layers'
+model_name = f'cats_vs_dogs_{len(layers)}-layers_with_augmentation-CMCM-1D_rms-1e-3'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=1e-3)
-model.compile(optimizer=opt, loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
 # Generating data from directory
@@ -160,16 +128,16 @@ Commonly used filters:
     fill_mode='nearest'
 Only use in train generator and never on validation generator
  """
-train_generator = train_datagen.flow_from_directory(train_dir, target_size=(160, 160),
-                                                    batch_size=100, class_mode='binary')
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(150, 150),
+                                                    batch_size=100, class_mode='categorical')
 
 val_datagen = ImageDataGenerator(rescale=1. / 255.0)
-val_generator = val_datagen.flow_from_directory(val_dir, target_size=(160, 160),
-                                                batch_size=100, class_mode='binary')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(150, 150),
+                                                batch_size=100, class_mode='categorical')
 
 # Training
-log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '-' + model_name
-chkpt_dir = 'logs/checkpoints' + model_name + '/'
+log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name
+chkpt_dir = 'logs/saved_models/ckpt/ckpt_' + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name + '/'
 if not os.path.exists(chkpt_dir):
     os.mkdir(chkpt_dir)
 
@@ -214,7 +182,7 @@ def plot_metrics(history):
     plt.show()
 
 
-plot_metrics(hist)
+# plot_metrics(hist)
 
 
 def make_predictions(directory, trained_model):
@@ -230,19 +198,21 @@ def make_predictions(directory, trained_model):
     print(f'Found {len(imgs)} images to predict.')
     for img in tqdm(imgs, desc='Prediction progress:'):
         img_path = os.path.join(directory, img)
-        pic = image.load_img(img_path, target_size=(160, 160))
+        pic = image.load_img(img_path, target_size=(150, 150))
         x = image.img_to_array(pic)
+        x = x/255.0
         x = np.expand_dims(x, axis=0)
         x = np.vstack([x])
         pred = trained_model.predict(x)
-        # if pred > 0.5:
-        #     predicted_class = 'cat'
-        # else:
-        #     predicted_class = 'dog'
+        print(type(pred))
+        if pred[0][0] > 0.5:
+            predicted_class = 'cat'
+        else:
+            predicted_class = 'dog'
         # print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
-        print(pred)
+        print(img, pred)
         preds.append(pred)
-        # pred_classes.append(predicted_class)
+        pred_classes.append(predicted_class)
 
     results = pd.DataFrame(columns=['Image', 'Prediction', 'Class'])
     results.Image = imgs
@@ -253,8 +223,21 @@ def make_predictions(directory, trained_model):
 
 
 res = make_predictions(test_dir, model)
+# image_dir = '../../../Data/cats_vs_dogs/image/single'
+# res = make_predictions(image_dir, model)
 
+# Saving the entire model
+model_save_dir = 'logs/saved_models/models/' + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + 'model_name'
+model.save(model_save_dir)
 
-# model.save('logs/model/cats_vs_dogs/model')
+# Loading the model
+# tf.keras.models.load_model(model_save_dir)
 
-# tf.keras.models.load_model('logs/model/cats_vs_dogs/')
+# Loading weights
+# ckpt_dir = 'logs/checkpointscats_vs_dogs_21-layers/'
+# ckpt = tf.train.latest_checkpoint(ckpt_dir)
+#
+# model.load_weights(ckpt)
+#
+# loss, acc = model.evaluate_generator(val_generator, verbose=1)
+# print(f'Loss: {loss}, Accuracy: {acc}')
