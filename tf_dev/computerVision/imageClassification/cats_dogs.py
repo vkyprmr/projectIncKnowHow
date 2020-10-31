@@ -74,34 +74,34 @@ def sample_images(directory):
 
 # Building the Model
 layers = [
-    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3), padding='same'),
     MaxPooling2D(2, 2),
-    Conv2D(64, (3, 3), activation='relu'),
+    Conv2D(64, (3, 3), activation='relu', padding='same'),
+    # MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(128, (3, 3), activation='relu', padding='same'),
+    # MaxPooling2D(2, 2),
+    Conv2D(128, (3, 3), activation='relu', padding='same'),
     MaxPooling2D(2, 2),
     Dropout(0.1),
-    Conv2D(128, (3, 3), activation='relu'),
+    Conv2D(256, (3, 3), activation='relu', padding='same'),
     MaxPooling2D(2, 2),
-    # Conv2D(64, (3, 3), activation='relu'),
+    Conv2D(256, (3, 3), activation='relu', padding='same'),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
+    # Conv2D(64, (3, 3), activation='relu', padding='same'),
     # MaxPooling2D(2, 2),
-    # Dropout(0.1),
-    # Conv2D(32, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    # Conv2D(32, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    # Dropout(0.1),
-    # Conv2D(64, (3, 3), activation='relu'),
-    # MaxPooling2D(2, 2),
-    # Conv2D(64, (3, 3), activation='relu'),
+    # Conv2D(64, (3, 3), activation='relu', padding='same'),
     # MaxPooling2D(2, 2),
     # Dropout(0.1),
     Flatten(),
-    # Dense(256, activation='relu'),
-    # Dropout(0.1),
+    Dense(256, activation='relu'),
+    Dropout(0.1),
     Dense(128, activation='relu'),
     Dense(1, activation='sigmoid')
 ]
 
-model_name = f'cvd_{len(layers)}-layersWaug-CMCMD-1D_rms_bin'
+model_name = f'cvd_{len(layers)}-layersWaug-CMCMD-2D_rms_bin'
 
 model = Sequential(layers=layers, name=model_name)
 opt = RMSprop(lr=1e-3)
