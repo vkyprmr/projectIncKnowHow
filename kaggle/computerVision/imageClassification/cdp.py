@@ -3,22 +3,24 @@ Developer: vkyprmr
 Filename: animals.py
 Created on: 2020-09-20 at 14:51:30
 '''
-'''
+"""
 Modified by: vkyprmr
-Last modified on: 2020-09-22 at 23:35:29
-'''
+Last modified on: 2020-11-1, Sun, 15:8:45
+"""
 
-#%%
 # Imports
 import os
 from datetime import datetime
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from pathlib import Path
+from tqdm import tqdm
 #%matplotlib qt
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import SGD, RMSprop, Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing import image
@@ -29,9 +31,8 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 for physical_device in physical_devices: 
         tf.config.experimental.set_memory_growth(physical_device, True)
 
-#%%
 # Preparing data
-base_dir = '../Data/cats_dogs_pandas/'
+base_dir = '../../../Data/cats_dogs_pandas/'
 train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'validation')
 
@@ -45,7 +46,6 @@ train_fnames_cats = os.listdir(train_dir_cats)
 train_fnames_dogs = os.listdir(train_dir_dogs)
 train_fnames_pandas = os.listdir(train_dir_pandas)
 
-#%%
 
 """ 
 # Looking at some images
@@ -84,7 +84,6 @@ for i, img_path in enumerate(next_cat_pic+next_dog_pic+next_panda_pic):
     # plt.tight_layout()
 
  """
-#%%
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
                                     rescale=1./255,
@@ -98,139 +97,174 @@ train_datagen = ImageDataGenerator(
                                     )
 train_generator = train_datagen.flow_from_directory(
                                                     train_dir,
-                                                    target_size=(128, 128),
-                                                    batch_size=50,
+                                                    target_size=(150, 150),
+                                                    batch_size=25,
                                                     class_mode='sparse'
                                                     )
 val_datagen = ImageDataGenerator(rescale=1./255)
 val_generator = val_datagen.flow_from_directory(
                                                     val_dir,
-                                                    target_size=(128, 128),
+                                                    target_size=(150, 150),
                                                     batch_size=25,
                                                     class_mode='sparse'
                                                     )
 
-# %%
-# Building the model
-model_name = f'2C1D_16x32xd01x64x256_rms'
 
-model = Sequential(layers=[
-                            Conv2D(64, (3,3), activation='relu', input_shape=(128,128,3)),
-                            MaxPooling2D(2,2),
-                            Conv2D(32, (3,3), activation='relu'),
-                            MaxPooling2D(2,2),
-                            Dropout(0.1),
-                            Conv2D(64, (3,3), activation='relu'),
-                            MaxPooling2D(2,2),
-                            Flatten(),
-                            Dense(256, activation='relu'),
-                            Dense(3, activation='softmax')
-                          ],
-                    name=model_name
-                    )
-model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.1),
-              metrics=['accuracy'])
+# Building the model
+layers = [
+    Conv2D(64, (3, 3), activation='relu', input_shape=(150, 150, 3), padding='same'),
+    BatchNormalization(),
+    MaxPooling2D(2, 2),
+    Conv2D(128, (3, 3), activation='relu', padding='same'),
+    # MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(256, (3, 3), activation='relu', padding='same'),
+    BatchNormalization(),
+    # MaxPooling2D(2, 2),
+    Conv2D(512, (3, 3), activation='relu', padding='same'),
+    BatchNormalization(),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
+    Conv2D(512, (3, 3), activation='relu', padding='same'),
+    BatchNormalization(),
+    MaxPooling2D(2, 2),
+    Conv2D(256, (3, 3), activation='relu', padding='same'),
+    BatchNormalization(),
+    MaxPooling2D(2, 2),
+    Dropout(0.1),
+    # Conv2D(512, (3, 3), activation='relu', padding='same'),
+    # MaxPooling2D(2, 2),
+    # Conv2D(512, (3, 3), activation='relu', padding='same'),
+    # MaxPooling2D(2, 2),
+    # Dropout(0.1),
+    Flatten(),
+    Dense(256, activation='relu'),
+    Dropout(0.1),
+    Dense(128, activation='relu'),
+    Dense(3, activation='softmax')
+]
+
+model_name = f'cdp_{len(layers)}-layersWaug-CMCMD_BN-1D_sgd1e-3'
+
+model = Sequential(layers=layers, name=model_name)
+opt = SGD(lr=1e-3, momentum=0.9)      # , momentum=0.9
+model.compile(optimizer=opt, loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
 
-#%%
 # Training
-epochs = 50
-lr_schedule = LearningRateScheduler(lambda epoch: 1e-4 * 10**(5))       # epochs/20
-history_lrs = model.fit_generator(
-                                train_generator,
-                                steps_per_epoch=25, epochs=100, 
-                                validation_data=val_generator, validation_steps=10,
-                                verbose=1, callbacks=[lr_schedule]
-                                )
+log_dir = "logs/fit/" + datetime.now().strftime("%Y%m%d-%H%M%S") + '_' + model_name
+chkpt_dir = 'logs/ckpt/cdp/'
+
+if not os.path.exists(chkpt_dir):
+    print('Created ckpt directory.')
+    os.mkdir(chkpt_dir)
+
+path_chkpt = chkpt_dir + datetime.now().strftime('%Y%m%d-%H%M%S') + '.ckpt'
+
+path_chkpt = Path(path_chkpt)
+
+tb_callback = TensorBoard(log_dir, histogram_freq=1, profile_batch=0)
+es_callback = EarlyStopping(monitor='val_loss', patience=15, verbose=1)
+rlr_callback = ReduceLROnPlateau(monitor='val_loss', patience=10, factor=0.1, verbose=1)
+chkpt_callback = ModelCheckpoint(filepath=path_chkpt.absolute(), monitor='val_loss',
+                                 verbose=1, save_weights_only=True,
+                                 save_best_only=True)
+callbacks = [tb_callback, chkpt_callback, rlr_callback, es_callback]
+
+spe = 25
+vspe = 25
+epochs = 100
+
+hist = model.fit(train_generator, epochs=epochs, # steps_per_epoch=spe,
+                 validation_data=val_generator, # validation_steps=vspe,
+                 verbose=1, callbacks=callbacks)
+
 
 # Visualizing Learning Rates
-fig = plt.figure()
-ax = fig.add_subplot(111)
-ax.set_xlabel('lr', fontsize=18)
-ax.set_ylabel('loss', fontsize=18)
-ax.spines['bottom'].set_color('cyan')
-ax.xaxis.label.set_color('black')
-ax.spines['left'].set_color('cyan')
-ax.yaxis.label.set_color('black')
-ax.tick_params(axis='x', colors='black')
-ax.tick_params(axis='y', colors='black')
-ax.semilogx(history_lrs.history['lr'], history_lrs.history["loss"])
+def plot_metrics(history):
+    """
+    Args:
+        history: history object assigned while training
+
+    Returns:
+
+    """
+    fig, ax = plt.subplots(nrows=2, ncols=1, sharex='all')
+    ax[0].plot(history.history['accuracy'], label='train_acc')
+    ax[0].plot(history.history['val_accuracy'], label='val_acc')
+    ax[0].set_ylabel('Accuracy')
+    ax[0].set_title('Train vs. Validation Accuracy')
+    ax[1].plot(history.history['loss'], label='train_loss')
+    ax[1].plot(history.history['val_loss'], label='val_loss')
+    ax[1].set_ylabel('Loss')
+    ax[1].set_title('Train vs. Validation Loss')
+    plt.legend()
+    plt.xlabel('Epochs')
+    plt.show()
 
 
-#%%
-# Actual training
-### Callback functions
-log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+'__'+model_name
-
-ckpt_dir = 'logs/checkpoints/'+model_name+'/'
-os.mkdir(ckpt_dir)
-path_checkpoint = ckpt_dir+datetime.now().strftime('%Y%m%d-%H%M%S')+'.ckpt'
-
-callback_checkpoint = ModelCheckpoint(filepath=path_checkpoint,
-                                      monitor='val_loss',
-                                      verbose=1,
-                                      save_weights_only=True,
-                                      save_best_only=True)
-
-callback_early_stopping = EarlyStopping(monitor='val_loss',
-                                        patience=25, verbose=1)
-
-log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')
-
-callback_tensorboard = TensorBoard(log_dir=log_dir,
-                                   histogram_freq=1,
-                                   write_graph=False)
-
-callback_reduce_lr = ReduceLROnPlateau(monitor='val_loss',
-                                       factor=0.1,
-                                       min_lr=1e-4,
-                                       patience=10,
-                                       verbose=1)
-
-callbacks = [callback_tensorboard,
-             callback_checkpoint,
-             callback_early_stopping,
-             callback_reduce_lr]
+# plot_metrics(hist)
 
 
-history = model.fit_generator(
-                                train_generator,
-                                steps_per_epoch=25, epochs=100, 
-                                validation_data=val_generator, validation_steps=10,
-                                verbose=1, callbacks=callbacks
-                                )
+def make_predictions(directory, trained_model):
+    """
+    Args:
+        directory: directory where test images are located
+        trained_model: trained model
+    Returns: a dataframe containing names of images and respective predictions and classes
+    """
+    imgs = os.listdir(directory)
+    preds = []
+    # pred_classes = []
+    print(f'Found {len(imgs)} images to predict.')
+    for img in tqdm(imgs, desc='Prediction progress:'):
+        img_path = os.path.join(directory, img)
+        pic = image.load_img(img_path, target_size=(150, 150))
+        x = image.img_to_array(pic)
+        x = x / 255.0
+        x = np.expand_dims(x, axis=0)
+        x = np.vstack([x])
+        pred = trained_model.predict(x)
+        # print(type(pred))
+        # print(pred)
+        # print(pred.shape)
+        # if pred[0][0] > 0.5:
+        #     predicted_class = 'dog'
+        #     preds.append(pred[0][0]*100)
+        # else:
+        #     predicted_class = 'cat'
+        #     preds.append((1 - pred[0][0]) * 100)
+        # print(f'The image {img} contains a {predicted_class}. ({len(imgs)-imgs.index(img)}/{len(imgs)})')
+        # print(img, pred)
+        preds.append(pred)
+        # pred_classes.append(predicted_class)
 
-models_dir = 'logs/models/'+model_name+'/'
-os.mkdir(models_dir)
-save_name = models_dir+datetime.now().strftime('%Y%m%d-%H%M%S')+'animals.h5'
-model.save(save_name)
+    results = pd.DataFrame(columns=['Image', 'Predicted_class', 'Prediction_prob'])
+    results.Image = imgs
+    results.Prediction_prob = preds
+    # results.Predicted_class = pred_classes
 
-# %%
-# Visualizing performance
-plt.figure()
-plt.plot(history.history['acc'], label='acc')
-plt.plot(history.history['val_acc'], label='val_acc')
-plt.title('Train vs. Validation Accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend()
+    return results
 
-plt.figure()
-plt.plot(history.history['loss'], label='loss')
-plt.plot(history.history['val_loss'], label='val_loss')
-plt.title('Train vs. Validation Loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
 
-# %%
-# Predictions
-img = image.load_img('../Data/cats_dogs_pandas/images/panda.jpg', target_size=(64, 64))
-x = image.img_to_array(img)
-x = np.expand_dims(x, axis=0)
-images = np.vstack([x])
-preds = model.predict(images)
-print(preds)
+# res = make_predictions(test_dir, model)
+# image_dir = '../../../Data/cats_vs_dogs/sample_test/'
+# res = make_predictions(image_dir, model)
 
-# %%
+
+# Saving the entire model
+model_save_dir = 'logs/saved_models/' + datetime.now().strftime("%Y%m%d-%H%M%S")
+model.save(model_save_dir)
+
+# Loading the model
+# tf.keras.models.load_model(model_save_dir)
+
+# Loading weights
+# ckpt_dir = 'logs/checkpointscats_vs_dogs_21-layers/'
+# ckpt = tf.train.latest_checkpoint(ckpt_dir)
+#
+# model.load_weights(ckpt)
+#
+# loss, acc = model.evaluate_generator(val_generator, verbose=1)
+# print(f'Loss: {loss}, Accuracy: {acc}')
