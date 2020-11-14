@@ -13,6 +13,9 @@
 *.csv
 *.xlsx
 *.data*
+*.record
+events.*
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -35,6 +38,9 @@ bld/
 [Ll]og/
 [Dd]ata/*/
 tf_models/
+protobuf-3.13.0/
+invalid_ckpts/
+pre-trained-models/
 
 # Pycharm
 .idea/

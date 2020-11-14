@@ -1,0 +1,269 @@
+item {
+  id: 1
+  name: 'aceOFclubs'
+}
+
+item {
+  id: 2
+  name: 'aceOFdiamonds'
+}
+
+item {
+  id: 3
+  name: 'aceOFhearts'
+}
+
+item {
+  id: 4
+  name: 'aceOFspades'
+}
+
+item {
+  id: 5
+  name: 'twoOFclubs'
+}
+
+item {
+  id: 6
+  name: 'twoOFdiamonds'
+}
+
+item {
+  id: 7
+  name: 'twoOFhearts'
+}
+
+item {
+  id: 8
+  name: 'twoOFspades'
+}
+
+item {
+  id: 9
+  name: 'threeOFclubs'
+}
+
+item {
+  id: 10
+  name: 'threeOFdiamonds'
+}
+
+item {
+  id: 11
+  name: 'threeOFhearts'
+}
+
+item {
+  id: 12
+  name: 'threeOFspades'
+}
+
+item {
+  id: 13
+  name: 'fourOFclubs'
+}
+
+item {
+  id: 14
+  name: 'fourOFdiamonds'
+}
+
+item {
+  id: 15
+  name: 'fourOFhearts'
+}
+
+item {
+  id: 16
+  name: 'fourOFspades'
+}
+
+item {
+  id: 17
+  name: 'fiveOFclubs'
+}
+
+item {
+  id: 18
+  name: 'fiveOFdiamonds'
+}
+
+item {
+  id: 19
+  name: 'fiveOFhearts'
+}
+
+item {
+  id: 20
+  name: 'fiveOFspades'
+}
+
+item {
+  id: 21
+  name: 'sixOFclubs'
+}
+
+item {
+  id: 22
+  name: 'sixOFdiamonds'
+}
+
+item {
+  id: 23
+  name: 'sixOFhearts'
+}
+
+item {
+  id: 24
+  name: 'sixOFspades'
+}
+
+item {
+  id: 25
+  name: 'sevenOFclubs'
+}
+
+item {
+  id: 26
+  name: 'sevenOFdiamonds'
+}
+
+item {
+  id: 27
+  name: 'sevenOFhearts'
+}
+
+item {
+  id: 28
+  name: 'sevenOFspades'
+}
+
+item {
+  id: 29
+  name: 'eightOFclubs'
+}
+
+item {
+  id: 30
+  name: 'eightOFdiamonds'
+}
+
+item {
+  id: 31
+  name: 'eightOFhearts'
+}
+
+item {
+  id: 32
+  name: 'eightOFspades'
+}
+
+item {
+  id: 33
+  name: 'nineOFclubs'
+}
+
+item {
+  id: 34
+  name: 'nineOFdiamonds'
+}
+
+item {
+  id: 35
+  name: 'nineOFhearts'
+}
+
+item {
+  id: 36
+  name: 'nineOFspades'
+}
+
+item {
+  id: 37
+  name: 'tenOFclubs'
+}
+
+item {
+  id: 38
+  name: 'tenOFdiamonds'
+}
+
+item {
+  id: 39
+  name: 'tenOFhearts'
+}
+
+item {
+  id: 40
+  name: 'tenOFspades'
+}
+
+item {
+  id: 41
+  name: 'jackOFclubs'
+}
+
+item {
+  id: 42
+  name: 'jackOFdiamonds'
+}
+
+item {
+  id: 43
+  name: 'jackOFhearts'
+}
+
+item {
+  id: 44
+  name: 'jackOFspades'
+}
+
+item {
+  id: 45
+  name: 'queenOFclubs'
+}
+
+item {
+  id: 46
+  name: 'queenOFdiamonds'
+}
+
+item {
+  id: 47
+  name: 'queenOFhearts'
+}
+
+item {
+  id: 48
+  name: 'queenOFspades'
+}
+
+item {
+  id: 49
+  name: 'kingOFclubs'
+}
+
+item {
+  id: 50
+  name: 'kingOFdiamonds'
+}
+
+item {
+  id: 51
+  name: 'kingOFhearts'
+}
+
+item {
+  id: 52
+  name: 'kingOFspades'
+}
+
+item {
+  id: 53
+  name: 'joker'
+}
+
+item {
+  id: 404
+  name: 'unknown'
+}
