@@ -5,17 +5,14 @@ Created on: 2020-11-14, Sat, 23:57:7
 """
 """
 Modified by: vkyprmr
-Last modified on: 2020-11-15, Sun, 3:16:33
+Last modified on: 2020-11-18, Mi., 14:17:7
 """
 
 import glob
 import cv2
 import numpy as np
 from PIL import Image
-import matplotlib
-matplotlib.use('QT5Agg')
 import matplotlib.pyplot as plt
-from matplotlib.blocking_input import BlockingKeyMouseInput
 import warnings
 import time
 import random
