@@ -70,6 +70,8 @@ class DetectObjectsInImages:
         """
         det_fnc, category_index = self.load_model()
         pred_imgs = []
+        # pred_labels = []
+        # pred_scores = []
         for image_path in self.PATH_TO_IMAGES:
             print(f'Running inference for {image_path}... ')
 
@@ -118,26 +120,31 @@ class DetectObjectsInImages:
 
             # print(image_np_with_detections.shape)
             pred_imgs.append(image_np_with_detections)
+            # pred_labels.append(detections['detection_classes'])
+            # pred_scores.append(detections['detection_scores'])
+            # print(pred_labels, pred_scores)
             print('Done')
 
-        if len(pred_imgs)>=4:
+        if len(pred_imgs) >= 4:
             plot_images = random.sample(pred_imgs, 4)
             i = 0
             for img in plot_images:
                 sp = plt.subplot(2, 2, i + 1)
-                # sp.axis('Off')  # Don't show axes (or gridlines)
+                sp.axis('Off')  # Don't show axes (or gridlines)
 
                 plt.imshow(img)
                 plt.tight_layout()
                 i += 1
-        elif len(pred_imgs)==1:
+        elif len(pred_imgs) == 1:
             plt.imshow(pred_imgs[0])
+            plt.axis('Off')
             plt.tight_layout()
         else:
+            plot_images = random.sample(pred_imgs, 2)
             i = 0
-            for img in pred_imgs:
+            for img in plot_images:
                 sp = plt.subplot(1, 2, i + 1)
-                # sp.axis('Off')  # Don't show axes (or gridlines)
+                sp.axis('Off')  # Don't show axes (or gridlines)
 
                 plt.imshow(img)
                 plt.tight_layout()
