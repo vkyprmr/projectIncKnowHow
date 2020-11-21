@@ -49,7 +49,7 @@ layers = [
     Dense(10, activation='softmax')
 ]
 model = Sequential(layers=layers, name=model_name)
-model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+model.compile(optimizer='sgd', loss='sparse_categorical_crossentropy', metrics=['accuracy'])    # better with adam
 model.summary()
 
 # Train the model
