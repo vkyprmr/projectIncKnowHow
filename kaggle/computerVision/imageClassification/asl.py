@@ -1,14 +1,14 @@
-'''
+"""
 Developer: vkyprmr
 Filename: asl.py
 Created on: 2020-09-22 at 21:01:50
-'''
-'''
+"""
+"""
 Modified by: vkyprmr
 Last modified on: 2020-09-22 at 23:04:53
-'''
+"""
 
-#%%
+
 # Imports
 import os
 import argparse
@@ -30,13 +30,13 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 for physical_device in physical_devices: 
         tf.config.experimental.set_memory_growth(physical_device, True)
 
-#%%
+
 # Preparing data
 base_dir = '../Data/asl/'
 train_dir = os.path.join(base_dir, 'train')
 val_dir = os.path.join(base_dir, 'validation')
 
-#%%
+
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
                                     rescale=1./255,
@@ -62,7 +62,7 @@ val_generator = val_datagen.flow_from_directory(
                                                     class_mode='sparse'
                                                     )
 
-# %%
+
 # Building the model
 model_name = 'IC150M_2CMD-128256_2D-512256_RMSProp'
 
@@ -90,7 +90,7 @@ model.compile(loss='sparse_categorical_crossentropy', optimizer=RMSprop(lr=0.001
 model.summary()
 
 
-#%%
+
 # Training
 ### Callback functions
 
@@ -107,7 +107,7 @@ history_lrs = model.fit_generator(
 plt.semilogx(history_lrs.history['lr'], history_lrs.history["loss"])
 # plt.axis([1e-8, 1e-3, 0, 300])
 
-#%%
+
 # Actual Training
 log_dir = 'logs/fit/'+datetime.now().strftime('%Y%m%d-%H%M%S')+'__'+model_name
 
@@ -154,7 +154,7 @@ os.mkdir(models_dir)
 save_name = models_dir+datetime.now().strftime('%Y%m%d-%H%M%S')+'animals.h5'
 model.save(save_name)
 
-# %%
+
 # Visualizing performance
 plt.figure()
 plt.plot(history.history['acc'], label='acc')
@@ -172,7 +172,7 @@ plt.xlabel('Epochs')
 plt.ylabel('Loss')
 plt.legend()
 
-# %%
+
 
 img = image.load_img('../Data/cats_dogs_pandas/images/panda.jpg', target_size=(64, 64))
 x = image.img_to_array(img)
@@ -181,4 +181,4 @@ images = np.vstack([x])
 preds = model.predict(images)
 print(preds)
 
-# %%
+

@@ -21,7 +21,7 @@ def move_files(num_files, shuffle=False, multi_dir=False):
     Args:
         multi_dir: does the directory follow a tree structure (default: False)
         num_files: number of files to shift
-        shuffle: whether or not to randomly shift files
+        shuffle: whether to randomly shift files
                  default: False
     Returns:
         Moves files to the specified directory

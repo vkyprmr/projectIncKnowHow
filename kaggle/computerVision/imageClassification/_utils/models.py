@@ -1,14 +1,14 @@
-'''
+"""
 Developer: vkyprmr
 Filename: models.py
 Created on: 2020-09-24 at 14:20:52
-'''
-'''
+"""
+"""
 Modified by: vkyprmr
 Last modified on: 2020-09-25 at 12:08:04
-'''
+"""
 
-#%%
+
 # Imports
 from datetime import datetime
 import tensorflow as tf
@@ -21,7 +21,7 @@ physical_devices = tf.config.experimental.list_physical_devices('GPU')
 for physical_device in physical_devices: 
         tf.config.experimental.set_memory_growth(physical_device, True) """
 
-#%%
+
 
 
 class Models:

@@ -1,8 +1,8 @@
-'''
+"""
 Developer: vkyprmr
 Filename: cdp.py
 Created on: 2020-09-20 at 14:51:30
-'''
+"""
 """
 Modified by: vkyprmr
 Last modified on: 2020-11-1, Sun, 15:8:45

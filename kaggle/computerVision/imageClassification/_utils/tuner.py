@@ -1,14 +1,14 @@
-'''
+"""
 Developer: vkyprmr
 Filename: tuner.py
 Created on: 2020-09-21 at 12:49:26
-'''
-'''
+"""
+"""
 Modified by: vkyprmr
 Last modified on: 2020-09-21 at 13:39:03
-'''
+"""
 
-#%%
+
 # Imports
 import os
 import pickle
@@ -44,7 +44,7 @@ if gpus:
         # Virtual devices must be set before GPUs have been initialized
         print(e) """
 
-#%%
+
 # Preparing data
 base_dir = 'Data/cats_dogs_pandas/'
 train_dir = os.path.join(base_dir, 'train')
@@ -59,7 +59,7 @@ train_fnames_cats = os.listdir(train_dir_cats)
 train_fnames_dogs = os.listdir(train_dir_dogs)
 train_fnames_pandas = os.listdir(train_dir_pandas)
 
-#%%
+
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
                                     rescale=1./255,
@@ -86,7 +86,7 @@ val_generator = val_datagen.flow_from_directory(
                                                     )
 
 
-#%%
+
 # Model
 
 def build_model(hp):
@@ -114,7 +114,7 @@ def build_model(hp):
                   metrics=['accuracy'])
     return model
 
-#%%
+
 ### Callback functions
 ckpt_dir = 'logs/ktuner/checkpoints/'+datetime.now().strftime('%Y%m%d-%H%M%S')
 os.mkdir(ckpt_dir)
@@ -149,7 +149,7 @@ callbacks = [callback_tensorboard,
 klogs = f'logs/ktuner/ktuner/{datetime.now().strftime("%Y%m%d-%H%M%S")}'
 os.mkdir(klogs)
 
-#%%
+
 # RandomSearch
 ### Training
 
@@ -168,13 +168,13 @@ ktuner.results_summary()
 with open(f'logs/ktuner/tuner/{datetime.now().strftime("%Y%m%d-%H%M%S")}.pkl', 'wb') as f:
     pickle.dump(ktuner, f)
 
-#%%
+
 # Best hyperparameters && best model
 best_hp = ktuner.get_best_hyperparameters()[0].values
 best_model = ktuner.get_best_models()[0].summary()
 ktuner.results_summary()
 
-#%%
+
 # Loading the tuner if exited
 tuner_file = ''
 ktuner = pickle.load(open(tuner_file, 'rb'))

@@ -1,12 +1,12 @@
-'''
+"""
 Developer: vkyprmr
 Filename: comparing_performance.py
 Created on: 2020-09-24 at 15:20:21
-'''
-'''
+"""
+"""
 Modified by: vkyprmr
 Last modified on: 2020-09-25 at 12:05:41
-'''
+"""
 
 import argparse
 import glob
@@ -41,7 +41,7 @@ if gpus:
         # Virtual devices must be set before GPUs have been initialized
         print(e)
 
-# %%
+
 # Arguments
 
 parser = argparse.ArgumentParser()
@@ -77,7 +77,7 @@ try:
 except:
     model_type = 'child_'
 
-# %%
+
 # Preparing data for cats_dogs_pandas dataset
 if dataset == 'asl':
     base_dir = '../Data/asl/'
@@ -87,7 +87,7 @@ else:
     base_dir = '../Data/cats_dogs_pandas/'
     train_dir = os.path.join(base_dir, 'train')
     val_dir = os.path.join(base_dir, 'validation')
-# %%
+
 # Genearting data using ImageDataGenerator
 train_datagen = ImageDataGenerator(
     rescale=1. / 255,
@@ -113,7 +113,7 @@ val_generator = val_datagen.flow_from_directory(
     batch_size=25,
     class_mode='sparse'
 )
-# %%
+
 # Model
 
 m = Models(dataset)
@@ -127,7 +127,7 @@ else:
 
 model.summary()
 
-# %%
+
 # Training the model
 s = time.time()
 history = model.fit_generator(
@@ -147,7 +147,7 @@ else:
     print(f'Time taken to train for {epochs} epochs: {time_taken} seconds.')
 print('========================================================================')
 
-# %%
+
 # Predictions
 pred_dir = '../Data/cats_dogs_pandas/test/'
 imgs = glob.glob(pred_dir + '*.jpg')
@@ -164,7 +164,7 @@ for img in images:
     preds.append(model.predict(img))
 # print(preds)
 
-# %%
+
 # Visualizing performance
 plt.figure()
 plt.plot(history.history['acc'], label='acc')

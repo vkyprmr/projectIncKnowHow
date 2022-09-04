@@ -1,10 +1,8 @@
-'''
+"""
 Created by: Vicky Parmar
 2020-02-02 18:32:14
-'''
+"""
 
-
-# %%
 # Imports
 import pandas as pd
 import numpy as np
@@ -14,7 +12,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
 
-# %%
+
 # Reading from excel and visualisation
 df = pd.read_excel('df.xlsx')   # Read any file via read_excel, read_csv, etc
 
@@ -38,13 +36,13 @@ x,y = Read_Two_Column_File('A:/Clustering/birch1.txt')
 
 '''
 
-# %%
+
 # Standardizing data    # Standardizing always proves beneficial and you can
 #                         also invert transformation back to original values
 ss = StandardScaler()
 df_std = pd.DataFrame(ss.fit_transform(df), columns=['X','Y'])
 
-# %%
+
 # Looking for optimal 'k' using Elbow ('L')-curve
 distortions = []
 K = range(1,31)
@@ -60,7 +58,7 @@ plt.ylabel('Distortion')
 plt.title('The Elbow Method showing the optimal k df')
 plt.show()
 
-# %%
+
 # K=15 'Using optimal k found in the above step to find clusters'
 kmeans = KMeans(n_clusters=15)
 kmeans.fit(df_std)
