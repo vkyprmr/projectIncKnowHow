@@ -34,7 +34,6 @@ plt.plot(dist)
 
 
 # Implementing DBSCAN
-DBSCAN()
 db = DBSCAN(eps=0.13, min_samples=7, metric='euclidean')
 db.fit(X)
 clusters = db.labels_
