@@ -13,7 +13,6 @@ from sklearn import metrics
 from sklearn.datasets import make_blobs
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
-%matplotlib qt
 
 # %%
 # Generating sample data
